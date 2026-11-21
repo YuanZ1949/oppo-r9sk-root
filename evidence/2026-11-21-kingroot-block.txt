@@ -320,3 +320,204 @@ Permission Denial: can't dump ... without permission android.permission.DUMP
   不弹窗（caller 不是 com.oppo.launcher）。
 - 本记录只证明「本机当前安装的 KingRoot 5.4.0 (204) 被拦」；
   不证明所有版本都被拦（条目可能是版本区间）。
+
+======================================================================
+6. 公开 ROM dump（2026-11-21 补）
+======================================================================
+
+6.1 realme RMX3171（RMX3171_11.A.13_0130_202103090105）
+----------------------------------------------------------------------
+URL:
+  https://code.input.sh/SovietReunion/RMX3171/-/raw/RMX3171_11.A.13_0130_202103090105/system/system/oppo/sys_rom_black_list.xml
+HTTP 200, size 6680 B
+
+<filter-conf>
+<version>20190305</version>
+<isOpen>1</isOpen>
+<filter-name>sys_rom_black_list</filter-name>
+<type value='forbid'>
+<startForbidden minCode='0' maxCode='max'>com.qihoo.permmgr</startForbidden>
+<startForbidden minCode='0' maxCode='max'>com.kingroot.kinguser</startForbidden>
+<startForbidden minCode='0' maxCode='max'>com.zhiqupk.root</startForbidden>
+<startForbidden minCode='0' maxCode='max'>com.baidu.easyroot</startForbidden>
+<startForbidden minCode='0' maxCode='max'>com.shuame.rootgenius</startForbidden>
+<startForbidden minCode='0' maxCode='max'>com.baidu.superroot</startForbidden>
+<startForbidden minCode='0' maxCode='max'>com.android.yellowcalendarz</startForbidden>
+<startForbidden minCode='0' maxCode='max'>com.changmi.launcher</startForbidden>
+<startForbidden minCode='0' maxCode='max'>com.android.services.securewifi</startForbidden>
+<startForbidden minCode='0' maxCode='max'>com.system.service.zdsgt</startForbidden>
+</type>
+<forbid>
+<zh-CN>此应用存在高危风险，已禁止其运行#此应用会获取手机最高权限，可能会恶意控制手机#好</zh-CN>
+<zh-TW>此應用存在高危風險，已禁止其運行#此應用會獲取手機最高權限，可能會惡意控制手機#好</zh-TW>
+
+6.2 OPPO/一加 kona（system_ext/oplus）
+----------------------------------------------------------------------
+URL:
+  https://www.gitgud.io/okbuddygsi-dumps/qti/kona/-/raw/dd45b0bf68562facef4b1f9bc911e3d2a2ac25fa/system_ext/oplus/sys_rom_black_list.xml
+HTTP 200, size 7419 B
+
+<version>20210204</version>
+<startForbidden minCode='0' maxCode='max'>com.kingroot.kinguser</startForbidden>
+（其余条目与 6.1 相同，全部 0,max）
+
+6.3 判定
+----------------------------------------------------------------------
+- 两份独立 dump 都证明：com.kingroot.kinguser 是「全版本封禁」。
+- OppoListManager.inAppStartForbiddenCodeList() 第一条分支：
+    if (minCode == 0 && maxCode.equals("max")) return true;
+  根本不读 versionCode。
+- 本机文件 2394 B，结构一致，推断同样是 0,max。
+- 换 KingRoot 版本（5.3.7 / 5.3.6 / 5.3.3 / 5.3.2 / 5.2.0 / 4.x）
+  包名不变，全部命中。
+
+======================================================================
+7. KingRoot 5.4.0 APK 的 native 组件（2026-11-21 补）
+======================================================================
+
+APK: work/kingroot.apk (11,519,732 B)
+classes.dex: 8,123,020 B
+assets: 65 个文件
+
+7.1 ELF 清单（assets/）
+----------------------------------------------------------------------
+  firewall-2.0.2.dat   25716  ARM   EXEC
+  ipme                 59736  ARM   EXEC
+  libai.so             25868  ARM   DYN
+  libai.so.arm64       26184  AARCH64 DYN
+  libbpm               91676  ARM   DYN
+  libbpm.arm64        128896  AARCH64 DYN
+  libgothook.so        13432  ARM   DYN
+  libwbsafeedit        17592  ARM   DYN
+  libwbsafeedit_64     13776  AARCH64 DYN
+  libwbsafeedit_x86     9352  x86   DYN
+  libwbsafeedit_x86_64 14016  x86_64 DYN
+  libzgo.so            34040  ARM   DYN
+  ljl                  21736  ARM   DYN
+  ljl_ku.1             21736  ARM   DYN
+
+7.2 assets/kd（gzip 压缩的 ARM 可执行文件）
+----------------------------------------------------------------------
+gzip 387,192 B -> 679,240 B
+ELF: class=32, machine=ARM(40), type=ET_EXEC(2), entry=0xa004
+
+关键字符串：
+  --global-daemon
+  [-] Unable to start daemon : no root permission
+  /system/bin/id > /dev/null 2> /dev/null
+  /system/etc/kds --global-daemon 1
+  /data/data-lib/kds
+  /data/data/%s/lib
+  export CLASSPATH=%s && exec /system/bin/app_process /system/bin %s
+  com.kingroot.kworker.666
+  com.king.root.k_worker
+  com.king.kds
+  RootAutoReqHandler
+  17IDaemonReqHandler
+  permissive sudaemon
+  allow { init init_shell kernel toolbox recovery s_init_shell su ... } kernel security *
+  /dev/ptmx
+  /proc/net/unix
+  /dev/socket/logdw
+  /sys/fs/selinux/policy
+  /sys/fs/selinux/load
+
+判定：kd 是「已经拿到 root 之后」的常驻守护进程；
+      没有 root 会打印 no root permission 并退出。
+
+7.3 assets/uranus.zip（872,980 B）
+----------------------------------------------------------------------
+entries:
+  40276.dat          272
+  daemon.jar      192,934
+  ipme             68,108
+  ipme64          109,368
+  ipme_pie         68,020
+  libclient.so    136,588
+  libclient64_50.so 186,120
+  libclient64_60.so 186,120
+  libclient_60.so 107,980
+  libsrvmgr.so    153,036
+  libsrvmgr64_50.so 218,968
+  libsrvmgr64_60.so 218,968
+  libsrvmgr_60.so 124,428
+
+daemon.jar/classes.dex: 414,008 B
+关键字符串：
+  mount -o remount,rw /system /system
+  mount -o remount,ro /system /system
+  chmod 0777
+  /system/bin/su
+  /system/xbin/su
+  /sbin/su
+  EP_KingRoot
+  EP_King_SuperUser
+  ACTION_ROOT_GOT
+  root_daemon_start_action
+  export CLASSPATH=%s && /system/bin/app_process /system/bin %s
+
+ipme/ipme64：
+  /sys/fs/selinux/policy
+  /sys/fs/selinux/load
+  policydb_read / policydb_write
+
+判定：uranus 是「拿到 root 之后」的 su/守护进程/SELinux 框架，
+      不是提权 exploit。
+
+7.4 加密模块
+----------------------------------------------------------------------
+assets/8101.jar:
+  first 8 bytes: 00 00 1f a5 00 00 00 3d   (0x1fa5=8101, 0x3d=61)
+  entropy 8.0 -> 完全加密，不是 zip
+assets/*.dat:
+  多数以 02 00 00 00 + 4 字节开头，其余为随机头
+  高熵，无明文；40246.dat 39,348 B / 40312.dat 88,552 B 等
+
+判定：真正的 root 策略/exploit 模块是加密的，需云端下发/解密；
+      APK 明文 assets 里没有可直接执行的提权 exploit。
+
+7.5 自签名校验
+----------------------------------------------------------------------
+在 classes.dex 反编译出的 8,497 个 smali 中搜索：
+  GET_SIGNATURES      0 命中
+  篡改                0 命中
+  安全授权            0 命中
+  KingRoot被          0 命中
+  krsdk.cert          2 命中（aco.smali / bmu.smali）
+aco.smali 只是把 assets/krsdk.cert 复制到 <dataDir>/applib，
+不是 App 完整性校验。
+
+判定：改包名 + 重签大概率能过启动；
+      但只能进界面，拿不到 root（exploit 在加密/云端模块）。
+
+======================================================================
+8. 工程模式 system uid 旁路（2026-11-21 补）
+======================================================================
+
+OppoAppStartupManager.handleStartActivity() 在查黑名单之前
+没有 callingUid == 1000 的旁路：
+
+  if (calledPackageName != null &&
+      OppoListManager.getInstance().isAppStartForbidden(calledPackageName)) {
+      ...
+      return true;
+  }
+
+OppoEngineerMode.apk 内搜索：
+  startupmanager / sys_rom_black_list / startForbidden
+  结果：0 命中
+
+判定：工程模式（system uid）也不能替我们拉起 KingRoot；
+      *#8011# 只能改 USB 相关属性，关不掉黑名单。
+
+======================================================================
+9. 结论（2026-11-21 补）
+======================================================================
+
+| 方向                     | 判定 | 原因 |
+| 换 KingRoot 版本         | 死路 | 公开 dump 均为 0,max，分支不看 versionCode |
+| 改包名 + 重签            | 能进界面，拿不到 root | 绕过包名匹配；exploit 在加密/云端模块 |
+| 直接跑 native payload    | 无用 | kd/ipme/daemon.jar 都要求已有 root |
+| 工程模式 system uid      | 无豁免 | 黑名单检查不看 callingUid |
+| 改 sys_rom_black_list.xml| 死循环 | 600 system:system，写它需要 root |
+| 9008 EDL                | 唯一确定性路径 | 芯片级写入，不经过 Android 层 |

@@ -22,7 +22,7 @@
 | --- | --- | --- |
 | OPPO 官方 BL 解锁 / 深度测试 | ❌ 不支持 | 深度测试只覆盖 R11 之后机型；R9s 系列最高 ColorOS 3.0（Android 6） |
 | `fastboot oem unlock` | ❌ 命令被阉割 | OPPO 在 aboot 中移除该命令，无 fastboot 解锁通道 |
-| 一键 root（KingRoot / 奇兔 / 各类「免解锁」工具） | ❌ 已失效（本机还禁止 KingRoot 启动） | 服务端/漏洞链早已下线；本机 `sys_rom_black_list.xml` 按包名 + versionCode 拦截，弹窗按钮只关闭不放行（`docs/09-kingroot-rom-blacklist.md`） |
+| 一键 root（KingRoot / 奇兔 / 各类「免解锁」工具） | ❌ 已失效（本机还禁止 KingRoot 启动，换版本也无效） | 服务端/漏洞链早已下线；本机 `sys_rom_black_list.xml` 按包名拦截，公开 dump 里 KingRoot 条目是 `0,max`（全版本），弹窗按钮只关闭不放行（`docs/09-kingroot-rom-blacklist.md`） |
 | **9008 EDL + 解锁 aboot + TWRP + SuperSU/Magisk** | ✅ **唯一可行** | 同平台（R9st / MSM8953 / 3.18.24）有 2026-07 实操记录；R9sk 有对应教程 |
 | 工程模式后门（`com.oppo.engineermode`） | ⚠️ 有真实缺陷，但**拿不到 root** | 存在未加权限保护的广播接收器，可越权改系统属性/拉起受保护页面；进程是 `system` uid 而非 root |
 | 公开内核 CVE（CVE-2019-2215 等） | ❌ **已实测证伪，不能当交付路径** | 漏洞、UAF、对象回收均实测成立；但 `writev`/`readv` 对合法内核地址双向 EFAULT，改写变不成任何读写原语（G2 失败），`PTE_PXN` 另封死 ret2usr/ret2heap（见 `docs/08-cve-lab.md` §3.4、§11） |

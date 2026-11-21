@@ -213,6 +213,13 @@ ActivityStackSupervisor.startActivityLocked
 
 **不要再在 KingRoot 上花时间。** 它不是「服务挂了所以没用」，而是这台 ROM
 **明确禁止它启动**；即使绕过启动，5.4.0 的旧 exploit 对补丁 2018-06 的内核也无效。
+
+换版本也不行：两份公开 ROM dump（realme 2019-03、OPPO/一加 2021-02）里
+`com.kingroot.kinguser` 都是 `minCode='0' maxCode='max'`，即**全版本封禁**；
+`inAppStartForbiddenCodeList()` 的第一条分支根本不读 `versionCode`。
+改包名 + 重签能绕过包名匹配、进到界面，但 APK 里的 `kd`/`uranus` 都是
+**拿到 root 之后**才用的组件，真正的 exploit 在加密/云端模块里。
+
 9008 EDL 不受 Android 层黑名单影响，仍是唯一确定性路径。
 
 > 完整逆向、复现命令与实测/推断标注见 `09-kingroot-rom-blacklist.md`；

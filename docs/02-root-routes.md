@@ -65,7 +65,9 @@ KingRoot 5.4.0（versionCode 204）被 OPPO 的 ROM 黑名单
 - 点桌面图标只会弹系统「应用存在风险」对话框；
 - `am start` 所有组件都返回 `START_SWITCHES_CANCELED`，连界面都进不去；
 - 弹窗是 OPPO 系统弹的，唯一按钮只关闭弹窗，没有「信任/白名单」入口；
-- 改名单需要 root，形成死循环。
+- 改名单需要 root，形成死循环；
+- **换版本也不行**：公开 ROM dump 里 `com.kingroot.kinguser` 是
+  `minCode='0' maxCode='max'`（全版本封禁），匹配逻辑根本不看 versionCode。
 
 所以它不只是「服务已死」，而是**在这台 ROM 上被系统层禁止启动**。
 完整逆向见 `09-kingroot-rom-blacklist.md`。
