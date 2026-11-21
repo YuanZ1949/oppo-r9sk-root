@@ -54,6 +54,20 @@ OTG 线会把手机的 `ID` 脚接地，手机判定为 **Host**，于是它给�
 工程模式测试已经把 USB 配置改成 `diag,adb` 并开启了 adb（见 `05-engineermode-audit.md`）。
 所以**线一修好，adb 应该直接可用**，不需要再去开发者选项里点开关。
 
+### 实时监视 USB 是否枚举（PC 上跑）
+
+在 PC 上开一个终端，执行：
+
+```powershell
+ssh r9sk "while true; do echo \$(date +%H:%M:%S) state=\$(cat /sys/class/udc/7000000.dwc3/state) speed=\$(cat /sys/class/udc/7000000.dwc3/current_speed); sleep 1; done"
+```
+
+然后把手机关机、按住音量上下、插 PC 后置 USB 口，观察输出：
+
+- 一直是 `state=not attached` / `speed=UNKNOWN` → 手机根本没看到数据链路（线/口/尾插）。
+- 变成 `state=configured` 或出现 `speed=high/full` → 物理层通了，接着看
+  Windows 设备管理器是否出现 `Qualcomm HS-USB QDLoader 9008` 或 `Android ADB Interface`。
+
 ### 2026-11-21 实测补充
 
 | 项 | 值 | 解读 |
