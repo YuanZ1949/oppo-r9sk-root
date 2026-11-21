@@ -25,7 +25,7 @@
 | 一键 root（KingRoot / 奇兔 / 各类「免解锁」工具） | ❌ 已失效 | 依赖的服务端/漏洞链早已下线，现多为广告包 |
 | **9008 EDL + 解锁 aboot + TWRP + SuperSU/Magisk** | ✅ **唯一可行** | 同平台（R9st / MSM8953 / 3.18.24）有 2026-07 实操记录；R9sk 有对应教程 |
 | 工程模式后门（`com.oppo.engineermode`） | ⚠️ 有真实缺陷，但**拿不到 root** | 存在未加权限保护的广播接收器，可越权改系统属性/拉起受保护页面；进程是 `system` uid 而非 root |
-| 公开内核 CVE（CVE-2019-2215 等） | ⚠️ 漏洞在，但**无现成可用利用** | 补丁级别 2018-06，之后的内核 CVE 均未修；但公开 PoC 全是 Pixel 2 定制，移植需 1–2 周专家工作量 |
+| 公开内核 CVE（CVE-2019-2215 等） | ⚠️ **漏洞实测存在，公开利用链不可移植** | 已实测确认 UAF、对象回收与改写均成立；但 3.18 的 `thread_info` 在内核栈上，`access_ok` 拒绝一切内核地址，公开 PoC 的 `addr_limit` 阶段无法接上（见 `docs/08-cve-lab.md`） |
 | Shizuku（免 root 的 adb 权限代理） | ❌ 无法启动 | 启动必须依赖 adb 或 root，两者都没有 |
 | ZeroTier / OpenVPN（设备侧） | ❌ 无 root 时不可用 | `/dev/tun` 属 `system:vpn`，Termux uid 10087 无权限；ZeroTier 官方无 Android 6 版 APK |
 | opencode2 / 现代 Node 工具链 | ❌ 平台不支持 | Android 6 + arm64 + Node 12，最低要求普遍是 Node 18+/API 24+ |
@@ -66,7 +66,8 @@ oppo-r9sk-root/
 │   ├── 04-9008-edl.md            ← 唯一可行路线的完整操作与风险
 │   ├── 05-engineermode-audit.md  ← 工程模式逆向：真实缺陷与天花板
 │   ├── 06-termux-node.md         ← Termux 现状、能做什么、卡在哪
-│   └── 07-blockers.md            ← 当前阻塞点与决策树
+│   ├── 07-blockers.md            ← 当前阻塞点与决策树
+│   └── 08-cve-lab.md             ← CVE-2019-2215 实机可利用性实验（实测断点）
 ├── evidence/                     ← 实机采集的原始输出（只读）
 │   ├── 2026-11-21-device-props.txt
 │   ├── 2026-11-21-engineermode-surface.txt
@@ -76,7 +77,8 @@ oppo-r9sk-root/
 │   ├── 2026-11-21-engineermode-live-test.txt
 │   ├── 2026-11-21-termux-resilience.txt
 │   ├── 2026-11-21-termux-inventory.txt
-│   └── 2026-11-21-termux-privileges.txt
+│   ├── 2026-11-21-termux-privileges.txt
+│   └── 2026-11-21-cve-lab.txt
 ├── tools/
 │   └── axml_dump.py              ← 二进制 AndroidManifest/XML 解码器
 └── work/                         ← 中间产物（不入库，见 .gitignore）
