@@ -115,3 +115,58 @@ CVE-2021-1905（补充）
        里竞态。
   3.18 有对应状态错误，但没有公开利用；属研究题，不是交付路径。
       https://googleprojectzero.github.io/0days-in-the-wild/0day-RCAs/2021/CVE-2021-1905.html
+
+Firehose loader 离线核验（2026-11-21 20:35）
+--------------------------------------------
+下载自 OneLabsTools/Programmers（经 jsDelivr / raw.githubusercontent）：
+
+  文件名                                     大小      MD5
+  prog_emmc_firehose_8953_ddr_oppo_r9s.mbn   359048    1ded75bb22c4e9334462f8be717ac907
+  prog_emmc_firehose_opp_r9s.mbn             359048    1ded75bb22c4e9334462f8be717ac907  （与上一行同一文件）
+  prog_emmc_firehose_8953_oppo_r9s.mbn       359112    e0165a731ebb573aa66be7c99023264c
+  prog_emmc_firehose_8953_ddr.mbn            359048    6e7aac18a7df36697e18a8cc0081ce70
+  prog_emmc_firehose_8953_ddr_oppo.mbn       359064    4f343a2745beed6593e82e52d8ca05bd
+  MSM8953.mbn                                363164    333fbe3da5a85898abde77fe03ad4988
+
+  * 前三个是 ELF32（e_machine=0x28 / ARM），是真正的 Firehose programmer。
+  * prog_emmc_firehose_8953_ddr_oppo.mbn 开头是 ASCII "data ddc,"，不是 ELF，
+    也没有 Firehose 命令字符串；疑似误标/非 programmer，不可用。
+  * MSM8953.mbn 内嵌 "Xiaomi Attestation CA0 / Xiaomi Root CA 10"，是小米签名，
+    对 OPPO 不可用。
+
+Temblast 索引交叉核对（https://www.temblast.com/ref/loaders.htm）：
+  * 1ded75bb22c4e933 行：Signer=Oppo，SHA256=90864ecb91f86a1c，
+    SHA384=ca93d5300bc053d7，ELF32。
+  * 6e7aac18a7df3669 与 e0165a731ebb573a 也在同一个 Oppo 签名组
+    （90864ecb91f86a1c / ca93d5300bc053d7）。
+    → 这批 OPPO 8953 loader 共用同一张 OPPO 根证书，不是按项目号各签一份。
+  * temblast 收录的 2745 个 loader 中没有 r9sk / 16027 文件名；
+    也没有第二个 OPPO 8953 签名组。
+
+二进制内容：
+  * 三个 ELF32 loader 均含完整 Firehose 命令：
+    configure / getstorageinfo / program / erase / patch / peek / read /
+    firmwarewrite / erasecust
+  * 均无 "Only nop and sig tag can be received before authentication"；
+    即没有 2018+ loader 的 Firehose 二次认证门。
+  * 证书字符串均为 "General OPPO 16017 Root CA1" /
+    "General OPPO 16017 attestation CA1"，没有 16027。
+
+判定（推断，待 9008 实测）：
+  * 公开可得的是 R9s（16017）签名的 8953 全功能 loader；R9sk（16027）
+    专用 loader 在公开 loader 索引中不存在。
+  * R9sk 与 R9s 同属 CPH1607 家族，设备 OTA 字符串是
+    R9s_11.A.37_0370_201911271523，固件基线共用；因此 R9sk 很可能接受
+    同一 OPPO 根证书签名的 loader。
+  * Sahara 是否接受，最终取决于设备 QFPROM 里的 PK_HASH；只有进 9008 用
+    edl / QSaharaServer 握手才能证实。若拒绝，回退到 R9sk A.18/A.22 包内
+    loader（A.18 1.53GB，MD5 8171554911a97008e410b385667fc9f2；
+    A.22 1.30GB，标题明确带 firehose_8953）。
+  * 该 loader 没有 Firehose 二次认证门；若 Sahara 通过，bkerler/edl 可直接
+    执行 configure / program / read，不需要 HsOjo noauth kit。
+
+旁证（不是 R9sk 实测）：
+  * XDA 2022 案例：R9s 用 prog_emmc_firehose_8953_ddr.mbn（353828 字节，
+    与本次 359048 字节不是同一文件）Sahara 传输成功（日志 "SUCCESS!!"），
+    随后失败是 QFIL 目录缺 fh_loader.exe，不是签名拒绝。
+    https://xdaforums.com/t/use-qfil-or-windows-7-64-bit-command-line-tool-qsaharaserver-exe-fh_loader-exe-through-qualcomm-hs-usb-qdloader-9008-com30-to-oppo-r9s.4397843/

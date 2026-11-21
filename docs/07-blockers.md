@@ -12,7 +12,7 @@
 | B2 | Termux 被系统杀，sshd 掉线 | 远程操作中断 | 用户（打开一次 Termux） |
 | B3 | ZeroTier 无 Android 6 APK | 设备侧组网 | 需要 root + 自行编译 |
 | B4 | opencode2 需要新 Node | 无法运行 | 平台限制，无解 |
-| B5 | 没有 9008 工具与线刷包 | 无法开始刷机 | 用户下载 + 校验 |
+| B5 | 没有 9008 工具与整包固件（loader 已找到） | 无法开始刷机 | 用户下载 + 校验 |
 
 ---
 
@@ -150,6 +150,11 @@ pgrep -f sshd >/dev/null || sshd
 4. R9sk 专用 TWRP：`r9s-twrp-3.2.3-0-20180906.img`（170112+）
    或 `r9s-twrp-3.0.2.0-20170107-old.img`（161202-）；
    必要时加刷 R9sk 的 `emmc_appsboot.mbn`（**不要用 R9s/R9st 的**）。
+5. Firehose loader：已从公开集合拿到 **R9s 签名**的全功能 8953 loader
+   `prog_emmc_firehose_8953_ddr_oppo_r9s.mbn`（359048B，MD5
+   `1ded75bb22c4e9334462f8be717ac907`，无 Firehose 二次认证门）。
+   R9sk 是否接受同一 OPPO 根证书，需进 9008 用 Sahara 握手实测；
+   若拒绝，回退到 R9sk A.18/A.22 包内 loader。详见 `04-9008-edl.md` §9.5.1。
 
 > 详细步骤、镜像来源与替代工具链见 `04-9008-edl.md` §9。
 > 原始检索记录见 `evidence/2026-11-21-9008-research.txt`。
