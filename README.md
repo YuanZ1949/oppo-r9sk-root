@@ -51,6 +51,10 @@
 
 完整 `getprop`、系统包列表、setuid 二进制清单见 `evidence/2026-11-21-device-props.txt`。
 
+> **loader 是例外**：Firehose loader 不是按机型打包的普通固件，而是 OPPO 8953
+> 签名组共用的 programmer。R9s 的 `prog_emmc_firehose_8953_ddr_oppo_r9s.mbn`
+> 可作 R9sk 的首选候选；但 `aboot`、分区表和系统镜像仍必须用 R9sk 的。
+
 ---
 
 ## 目录结构
