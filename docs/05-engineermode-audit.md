@@ -246,7 +246,7 @@ RUtilsCmd("if [ ! -d data/media/0/oppo_log/md5diff ]; then mkdir -p ...; fi; cho
 | 开启 adb（USB） | 任意 App + 物理 USB | 中：需要数据线 + 授权弹窗 |
 | 切 USB 到 `diag,adb` | 任意 App | 中：暴露高通诊断口 |
 | 打开工程模式页面 | 任意 App | 中：部分页面可改射频/网络参数 |
-| **触发恢复出厂** | 任意 App（`*#8778#`） | **高：数据全丢** |
+| **可能触发恢复出厂** | 任意 App（`*#8778#`，取决于 `oppo.customize.function.reset` feature） | **高：数据全丢** |
 | 关机 | 任意 App（`*#911#`） | 低 |
 
 **CVSS 粗略评估**：本地、低复杂度、无需权限 → `AV:L/AC:L/PR:N/UI:N`，
