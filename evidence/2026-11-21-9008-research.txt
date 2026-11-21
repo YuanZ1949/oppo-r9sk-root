@@ -1,0 +1,108 @@
+2026-11-21 9008/EDL 网络检索记录
+=====================================
+
+设备（ssh r9sk 实测）
+--------------------
+  ro.product.model              = OPPO R9sk
+  ro.build.display.id           = R9sk_11_A.37_191127
+  ro.build.version.ota          = R9s_11.A.37_0370_201911271523
+  ro.build.version.incremental  = eng.root.20191127.155013
+  ro.build.fingerprint          = OPPO/R9sk/R9sk:6.0.1/MMB29M/1528528402:user/release-keys
+  ro.boot.verifiedbootstate     = green      (bootloader 已锁)
+  ro.boot.veritymode            = enforcing  (dm-verity 开启)
+  ro.secure                     = 1
+  ro.debuggable                 = 0
+  ro.build.type                 = user
+
+USB 状态（实测）
+----------------
+  /sys/class/udc/7000000.dwc3/state = not attached
+  /sys/class/udc/7000000.dwc3/current_speed = UNKNOWN
+  sys.usb.state        = diag,adb
+  persist.sys.usb.config = diag,adb
+  /sys/class/power_supply/usb: online=1 type=USB_DCP current_max=1500000
+  /sys/class/power_supply/ac:  online=1 type=Mains
+
+  解读：当前接的是 DCP 专用充电器（D+/D- 短接），UDC 显示 not attached
+  属正常现象，不能据此判断数据线坏。B1 的判据仍是"接 PC 是否提示音 /
+  设备管理器是否出现新设备"。
+
+9008 进法（多个来源一致）
+--------------------------
+  * OPPO 自 R7 起不提供 fastboot；R9s/R9sk 无法用 fastboot 解锁。
+  * 关机 -> 同时按住 音量+ 和 音量- -> 插入 USB -> QUSB_BULK/9008。
+  * 来源：
+      http://www.romleyuan.com/lec/read?id=142
+      https://cnblogs.com/zerofc/p/12263007.html
+      https://juejin.cn/post/7660708287621365795
+
+工具与项目号
+------------
+  * 改版 MsmDownloadTool：先运行 MsmDownloadTool-0.exe 一次，关闭，
+    再运行原版；原版"开始"按钮才可用。
+  * R9sk 项目号 = 16027；R9s = 16017。
+  * F5 -> 分区选择 -> 全不选 -> 勾 recovery（TWRP）；
+    A.37（>= 170112）按教程还要加刷 aboot（解锁版 emmc_appsboot.mbn）。
+  * 刷完自动重启，立刻按住 音量- 进 TWRP；第一次进 TWRP 允许修改
+    system；刷 SuperSU 2.82（或 Magisk 20.x/21.x）。
+  * 来源：
+      http://www.romleyuan.com/lec/read?id=142
+      https://cnblogs.com/zerofc/p/12263007.html
+      https://juejin.cn/post/7660708287621365795
+
+镜像可得性（2026-11-21 检索）
+------------------------------
+  R9sk_11_A.22_170603_(firehose_8953)_6.0.1   1.30 GB
+      https://romadd.org/?a=downloads&b=file&id=1787
+      标题明确带 firehose_8953，最有用。
+  R9sk_11_A.53_190413                         1.86 GB
+      https://gsmhostingfiles.com/?a=downloads&b=file&id=24323
+  R9sk_11_A.14_161126                         1.52 GB / 1.22 GB
+      https://gsmhostingfiles.com/?a=downloads&b=file&id=24322
+      https://www.94shuaji.com/forum.php?mod=forumdisplay&fid=55
+  R9sk_11_A.18_170112                         1.18 GB
+      https://cfirmware.com/?a=downloads&b=file&id=4081
+  R9sk_11_A.26_180703                         —
+      https://needrom.com/download/oppo-r9sk
+  R9sk_11_A.37_191127                         —   未找到公开镜像
+
+  注：needrom 包内含 rawprogram0.xml + patch0.xml，是 QFIL/MsmDownloadTool
+  可直接用的分区表格式。
+
+TWRP
+----
+  r9s-twrp-3.2.3-0-20180906.img      支持 170112+（含 Android 7.1）
+  r9s-twrp-3.0.2.0-20170107-old.img  支持 161202 及以下
+  unofficialtwrp.com 3.7.0 for Oppo R9s（mega 链接）
+  XDA: [RECOVERY][UNOFFICIAL] TWRP for OPPO A57 & R9s (2016)
+      https://xdaforums.com/t/recovery-unofficial-twrp-for-oppo-a57.4007685
+      （抓取返回 403，仅确认帖子存在）
+  来源：
+      http://www.romleyuan.com/lec/read?id=142
+      https://unofficialtwrp.com/unofficial-twrp-3-7-0-root-oppo-r9s
+
+替代工具链（不碰改版 exe，研究级）
+------------------------------------
+  * bkerler/oppo_decrypt 的 ofp_qc_decrypt.py：从 OFP 提取
+    prog_firehose_ddr.elf（签名 loader）。
+      https://github.com/bkerler/oppo_decrypt
+      https://github.com/unix3dgforce/OppoDecrypt
+  * bkerler/edl：Sahara/Firehose 客户端。
+      https://github.com/bkerler/edl
+  * HsOjo/edl-noauth-kit：针对 2018+ 需要 sig auth 的 loader。
+    原理：全新 9008 会话里 challenge 为空，比较循环被跳过，
+    blob2（256 字节）可过；每次操作前必须重新进 9008。
+    该 kit 在 macOS 测试（SDM660），Windows 未实测。
+      https://github.com/HsOjo/edl-noauth-kit
+
+CVE-2021-1905（补充）
+---------------------
+  P0 RCA 明确：Proof-of-concept N/A，exploit sample N/A。
+  触发条件：
+    1) 一个 GPU 共享映射被拆成多个 VMA；关闭其中一个 VMA 会调用
+       kgsl_gpumem_vm_close，清空 entry->memdesc.useraddr；
+    2) get_mmap_entry 因此允许再次映射；
+    3) fork 出的两个进程共享 GPU 地址空间，在 kgsl_get_unmapped_area
+       里竞态。
+  3.18 有对应状态错误，但没有公开利用；属研究题，不是交付路径。
+      https://googleprojectzero.github.io/0days-in-the-wild/0day-RCAs/2021/CVE-2021-1905.html

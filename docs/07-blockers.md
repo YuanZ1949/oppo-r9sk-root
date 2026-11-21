@@ -54,6 +54,21 @@ OTG 线会把手机的 `ID` 脚接地，手机判定为 **Host**，于是它给�
 工程模式测试已经把 USB 配置改成 `diag,adb` 并开启了 adb（见 `05-engineermode-audit.md`）。
 所以**线一修好，adb 应该直接可用**，不需要再去开发者选项里点开关。
 
+### 2026-11-21 实测补充
+
+| 项 | 值 | 解读 |
+| --- | --- | --- |
+| `sys.usb.state` | `diag,adb` | 软件配置正确 |
+| `persist.sys.usb.config` | `diag,adb` | 开机默认就是 diag+adb |
+| `/sys/class/udc/7000000.dwc3/state` | `not attached` | 当前没有主机/数据链路 |
+| `current_speed` | `UNKNOWN` | 未枚举 |
+| `/sys/class/power_supply/usb` | `online=1, type=USB_DCP` | 接的是 D+/D- 短接的专用充电器 |
+
+> **关键**：DCP 充电器本来就不会枚举数据，所以上面的 `not attached`
+> **不能**证明数据线坏了。B1 的判据仍然是：
+> 换一根确定传过文件的线 + PC 后置 USB 口，看 Windows 有没有提示音、
+> 设备管理器有没有新设备。若仍然毫无反应，才指向尾插/主板数据线故障。
+
 ### 只有 USB 通了，才能做这些
 
 | 动作 | 依赖 |
@@ -126,10 +141,18 @@ pgrep -f sshd >/dev/null || sshd
 
 需要准备：
 
-1. Qualcomm USB Driver
-2. R9sk 官方线刷包（版本必须匹配 `R9sk_11_A.37` 或同线）
-3. 授权版 MsmDownloadTool（⚠️ 来源不可信，建议虚拟机断网运行）
-4. R9sk 专用 TWRP 包（含解锁 `emmc_appsboot.mbn`）
+1. Qualcomm USB Driver（Win10 需关驱动签名）
+2. R9sk 线刷包：公开镜像有 **A.14 / A.18 / A.22(firehose) / A.26 / A.53**；
+   本机是 **A.37_191127**，没有找到 A.37 的公开镜像。
+   只刷 recovery 时可用较老版本的 firehose + 分区表，但属跨版本操作。
+3. 改版 MsmDownloadTool（先跑 `MsmDownloadTool-0.exe` 一次，再跑原版）；
+   R9sk 项目号 **16027**。⚠️ 来源不可信，建议虚拟机断网运行。
+4. R9sk 专用 TWRP：`r9s-twrp-3.2.3-0-20180906.img`（170112+）
+   或 `r9s-twrp-3.0.2.0-20170107-old.img`（161202-）；
+   必要时加刷 R9sk 的 `emmc_appsboot.mbn`（**不要用 R9s/R9st 的**）。
+
+> 详细步骤、镜像来源与替代工具链见 `04-9008-edl.md` §9。
+> 原始检索记录见 `evidence/2026-11-21-9008-research.txt`。
 
 ---
 
