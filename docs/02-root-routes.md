@@ -157,7 +157,7 @@ order = "<其余暗码>" → 以 system 身份 startActivity 打开受 OPPO_COMP
 | Dirty COW (CVE-2016-5195) | 2016-10 | ❌ 已修 |
 | QuadRooter (CVE-2016-2503/2504/2059/2060) | 2016-08 | ❌ 已修 |
 | CVE-2017-* 系列 | 2017 | ❌ 已修 |
-| **CVE-2019-2215**（binder UAF） | 2019-10 | ✅ **未修，最佳候选** |
+| **CVE-2019-2215**（binder UAF） | 2019-10 | ✅ 未修；漏洞真实但**实机证伪**（见 `08-cve-lab.md`） |
 | CVE-2020-0041 / 0423（binder） | 2020 | ✅ 未修，但 PoC 面向 Android 8/9 |
 | CVE-2021-0920（unix socket GC） | 2021 | ✅ 未修，公开 PoC 少 |
 

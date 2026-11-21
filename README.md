@@ -25,7 +25,7 @@
 | 一键 root（KingRoot / 奇兔 / 各类「免解锁」工具） | ❌ 已失效 | 依赖的服务端/漏洞链早已下线，现多为广告包 |
 | **9008 EDL + 解锁 aboot + TWRP + SuperSU/Magisk** | ✅ **唯一可行** | 同平台（R9st / MSM8953 / 3.18.24）有 2026-07 实操记录；R9sk 有对应教程 |
 | 工程模式后门（`com.oppo.engineermode`） | ⚠️ 有真实缺陷，但**拿不到 root** | 存在未加权限保护的广播接收器，可越权改系统属性/拉起受保护页面；进程是 `system` uid 而非 root |
-| 公开内核 CVE（CVE-2019-2215 等） | ⚠️ **漏洞实测存在；列为候选交付路径 B（研究中）** | UAF、对象回收与改写均已实测；但 3.18 的 `wait@72` 对齐让公开链的"链式任意写"断掉，只剩固定起点线性堆写；`addr_limit` 在内核栈上；且 `PTE_PXN` 封死 ret2usr/ret2heap（见 `docs/08-cve-lab.md` §11） |
+| 公开内核 CVE（CVE-2019-2215 等） | ❌ **已实测证伪，不能当交付路径** | 漏洞、UAF、对象回收均实测成立；但 `writev`/`readv` 对合法内核地址双向 EFAULT，改写变不成任何读写原语（G2 失败），`PTE_PXN` 另封死 ret2usr/ret2heap（见 `docs/08-cve-lab.md` §3.4、§11） |
 | Shizuku（免 root 的 adb 权限代理） | ❌ 无法启动 | 启动必须依赖 adb 或 root，两者都没有 |
 | ZeroTier / OpenVPN（设备侧） | ❌ 无 root 时不可用 | `/dev/tun` 属 `system:vpn`，Termux uid 10087 无权限；ZeroTier 官方无 Android 6 版 APK |
 | opencode2 / 现代 Node 工具链 | ❌ 平台不支持 | Android 6 + arm64 + Node 12，最低要求普遍是 Node 18+/API 24+ |
@@ -105,7 +105,7 @@ oppo-r9sk-root/
 - ❌ 不要下载来源不明的「一键 root」「免解锁 root」工具往手机上装
 - ❌ 不要用 R9s / R9st 的 aboot 刷 R9sk
 - ❌ 不要在没备份 efs 的情况下刷任何东西
-- ❌ 不要指望 CVE 路线能「今晚搞定」——它是**候选交付路径 B**，当前卡在 G2（写原语），不是改几行 PoC 的事
+- ❌ 不要指望 CVE 路线能「今晚搞定」——2026-11-21 已实测证伪：G2（把改写变成读写原语）双向失败，不是改几行 PoC 的事
 
 ---
 
