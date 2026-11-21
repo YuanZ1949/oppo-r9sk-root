@@ -1,0 +1,54 @@
+# 工程模式暗码映射表
+# 来源：/system/app/OppoEngineerMode/OppoEngineerMode.apk → res/xml/engineermode_action_qcom.xml
+# 解码工具：tools/axml_dump.py
+# 采集：2026-11-21
+
+<resources>
+  <action name="0"  action_order="*#36446337#" action_str="com.oppo.engineermode.EngineeringMode">
+  <action name="1"  action_order="*#800#"     action_str="com.oppo.engineermode.qualcomm.LogSwitch">
+  <action name="2"  action_order="*#807#"     action_str="com.oppo.engineermode.autotest.AutoTest">
+  <action name="3"  action_order="*#808#"     action_str="com.oppo.engineermode.manualtest.ManualTest">
+  <action name="4"  action_order="*#805#"     action_str="com.oppo.engineermode.bluetoothtest.BluetoothTest">
+  <action name="5"  action_order="*#804#"     action_str="com.oppo.engineermode.NetworkSearch">
+  <action name="6"  action_order="*#803#"     action_str="com.oppo.engineermode.wifitest.WifiSettings">
+  <action name="7"  action_order="*#802#"     action_str="com.oppo.engineermode.gps.GpsActivity">
+  <action name="8"  action_order="*#806#"     action_str="com.oppo.engineermode.autoaging.AutoAgingMainListActivity">
+  <action name="9"  action_order="*#8778#"    action_str="com.oppo.engineermode.manualtest.MasterClear">
+  <action name="10" action_order="*#99#"      action_str="com.oppo.engineermode.KeepSrceenOn">
+  <action name="11" action_order="*#6776#"    action_str="com.oppo.engineermode.CheckSoftwareInfo">
+  <action name="12" action_order="*#66#"      action_str="com.oppo.engineermode.IMeiAndPcbCheck">
+  <action name="13" action_order="*#888#"     action_str="com.oppo.engineermode.PcbShow">
+  <action name="14" action_order="*#809#"     action_str="com.oppo.engineermode.echotest.EchoTest">
+  <action name="15" action_order="*##*8110#"  action_str="com.oppo.engineermode.qualcomm.OtaSwitch">
+  <action name="16" action_order="*#801#"     action_str="com.oppo.engineermode.qualcomm.DiagEnabled">
+  <action name="17" action_order="*#008#"     action_str="com.oppo.engineermode.LanguageSwitchToChineseActivity">
+  <action name="18" action_order="*#67760044#" action_str="com.oppo.engineermode.LanguageSwitchToEnglishActivity">
+  <action name="19" action_order="*#268#"     action_str="com.oppo.engineermode.qualcomm.QualCommActivity">
+  <action name="20" action_order="*#9434#"    action_str="com.oppo.decrypt.WifiDecryptionActivity">
+  <action name="21" action_order="*#12345#"   action_str="com.oppo.activation.action.STOP_SERVICE">
+  <action name="22" action_order="*#911#"     action_str="com.oppo.engineermode.PowerOff">
+  <action name="23" action_order="*#9434#"    action_str="com.oppo.decrypt.WifiDecryptionActivity">
+  <action name="24" action_order="*#10000#"   action_str="com.oppo.engineermode.MarkResultShow">
+  <action name="25" action_order="*#814#"     action_str="com.oppo.engineermode.TDSNetworkSearch">
+  <action name="26" action_order="*#824#"     action_str="com.oppo.engineermode.WCDMANetworkSearch">
+  <action name="27" action_order="*#834#"     action_str="com.oppo.engineermode.LTENetworkSearch">
+  <action name="28" action_order="*#8011#"    action_str="com.oppo.engineermode.NoUI">
+  <action name="29" action_order="*##*37847#" action_str="com.oppo.engineermode.manualtest.DeviceListActivity">
+  <action name="30" action_order="*#0000#"    action_str="com.oppo.engineermode.TelecomVersionInfo">
+  <action name="31" action_order="*#844#"     action_str="com.oppo.engineermode.CDMANetworkSearch">
+  <action name="32" action_order="*#818#"     action_str="com.oppo.engineermode.NetworkSearch_New">
+  <action name="33" action_order="*#838#"     action_str="com.oppo.engineermode.NetworkSearch_New">
+  <action name="34" action_order="*#928#"     action_str="com.oppo.engineermode.wifitest.WifiFTMActivity">
+  <action name="35" action_order="*#858#"     action_str="com.oppo.engineermode.manualtest.SarControl">
+  <action name="36" action_order="*#7332#"    action_str="com.oppo.rftoolkit.RfToolkitFactory">
+  <action name="37" action_order="*#7328#"    action_str="com.oppo.rftoolkit.RfToolkitAgingTest">
+  <action name="38" action_order="*#7327#"    action_str="com.oppo.rftoolkit.RfToolkitCustomerService">
+  <action name="39" action_order="*#727#"     action_str="com.oppo.engineermode.manualtest.SarTest">
+  <action name="40" action_order="*#899#"     action_str="com.oppo.engineermode.aftersale.AfterSalePage">
+</resources>
+
+# 注意：
+# - 上表是 qcom 分支的映射（本机 MSM8953，走 qcom 分支）
+# - MTK 分支的映射在 res/xml/engineermode_action_mtk.xml，本机不适用
+# - *#8011# 在代码里被特殊处理（改 USB 配置），不会走上面的 startActivity 分支
+# - *#8778# / *#911# 是破坏性动作，未测试

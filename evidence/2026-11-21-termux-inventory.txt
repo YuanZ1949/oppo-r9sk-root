@@ -1,0 +1,86 @@
+# termux inventory
+prefix=/data/data/com.termux/files/usr
+uname=armv8l
+python=Python 3.8.0
+node=v12.13.0
+git=git version 2.23.0
+clang=clang version 9.0.0 (tags/RELEASE_900/final)
+
+## installed packages
+100
+Listing...
+apt/stable,now 1.4.10-3 arm [installed]
+bash/stable,now 5.0.11-1 arm [installed]
+binutils/stable,now 2.33.1-1 arm [installed,automatic]
+busybox/stable,now 1.31.1-1 arm [installed]
+bzip2/stable,now 1.0.8-3 arm [installed]
+c-ares/stable,now 1.15.0-3 arm [installed,automatic]
+ca-certificates/stable,now 1:2025.02.25 all [installed]
+clang/stable,now 9.0.0-1 arm [installed]
+command-not-found/stable,now 1.42.1 arm [installed]
+coreutils/stable,now 8.31-5 arm [installed]
+curl/stable,now 7.67.0-1 arm [installed]
+dash/stable,now 0.5.10.2-3 arm [installed]
+debianutils/stable,now 4.9-1 arm [installed]
+diffutils/stable,now 3.7-3 arm [installed]
+dos2unix/stable,now 7.4.1-1 arm [installed]
+dpkg/stable,now 1.19.7-5 arm [installed]
+ed/stable,now 1.15-1 arm [installed]
+fd/stable,now 7.4.0-1 arm [installed]
+file/stable,now 5.37-2 arm [installed]
+findutils/stable,now 4.7.0-1 arm [installed]
+game-repo/stable,now 1.2 all [installed]
+gawk/stable,now 5.0.1-5 arm [installed]
+gdbm/stable,now 1.18.1-3 arm [installed,automatic]
+git/stable,now 2.23.0-1 arm [installed]
+gpgv/stable,now 2.2.17-2 arm [installed]
+grep/stable,now 3.3-3 arm [installed]
+gzip/stable,now 1.10-3 arm [installed]
+htop/stable,now 2.2.0-3 arm [installed]
+inetutils/stable,now 1.9.4-7 arm [installed]
+jq/stable,now 1.6-2 arm [installed]
+krb5/stable,now 1.17-2 arm [installed,automatic]
+ldns/stable,now 1.7.1-2 arm [installed,automatic]
+less/stable,now 551-2 arm [installed]
+libandroid-glob/stable,now 0.6-1 arm [installed]
+libandroid-support/stable,now 24-6 arm [installed]
+libbz2/stable,now 1.0.8-3 arm [installed]
+libc++/stable,now 20-3 arm [installed]
+libcrypt/stable,now 0.2-3 arm [installed]
+libcurl/stable,now 7.67.0-1 arm [installed]
+libdb/stable,now 18.1.32-3 arm [installed,automatic]
+libedit/stable,now 20191025-3.1-1 arm [installed,automatic]
+libevent/stable,now 2.1.11-3 arm [installed,automatic]
+libffi/stable,now 3.2.1-5 arm [installed,automatic]
+libgcrypt/stable,now 1.8.5-1 arm [installed]
+libgmp/stable,now 6.1.2-5 arm [installed]
+libgpg-error/stable,now 1.36-2 arm [installed]
+libiconv/stable,now 1.16-4 arm [installed]
+libicu/stable,now 65.1-1 arm [installed,automatic]
+libllvm/stable,now 9.0.0-1 arm [installed,automatic]
+liblzma/stable,now 5.2.4-3 arm [installed]
+libmpfr/stable,now 4.0.2-2 arm [installed]
+libnghttp2/stable,now 1.39.2-1 arm [installed]
+libpopt/stable,now 1.16-4 arm [installed,automatic]
+libsqlite/stable,now 3.30.1-1 arm [installed,automatic]
+libunistring/stable,now 0.9.10-4 arm [installed,automatic]
+libutil/stable,now 0.4-1 arm [installed]
+libuuid/stable,now 1.0.3-4 arm [installed,automatic]
+make/stable,now 4.2.1-4 arm [installed]
+nano/stable,now 4.6 arm [installed]
+
+## sshd
+562
+tcp        0      0 0.0.0.0:8022            0.0.0.0:*               LISTEN     
+tcp6       0      0 :::8022                 :::*                    LISTEN     
+
+## storage
+Filesystem               Size     Used     Free   Blksize
+/data/data/com.termux/files/home    53.7G    16.1G    37.6G   4096
+
+## mem
+              total        used        free      shared  buff/cache   available
+Mem:           3595        2246         107          27        1241        1223
+Swap:           511         463          48
+
+## bin

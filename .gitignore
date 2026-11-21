@@ -1,0 +1,14 @@
+# 中间产物：反编译输出、抓下来的 APK/dex、下载的工具
+work/
+*.apk
+*.dex
+*.odex
+*.jar
+*.zip
+*.img
+*.tar.gz
+
+# 本地临时
+*.log
+.DS_Store
+Thumbs.db

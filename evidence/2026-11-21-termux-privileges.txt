@@ -1,0 +1,23 @@
+## identity
+uid=10087(u0_a87) gid=10087(u0_a87) groups=10087(u0_a87),3003(inet),9997(everybody),50087(all_a87),99909997(u999_everybody)
+
+## tun
+ls: cannot access '/dev/net/tun': No such file or directory
+crw-rw---- 1 system vpn 10, 200 Jan  1  1970 /dev/tun
+
+## groups
+Uid:	10087	10087	10087	10087
+Gid:	10087	10087	10087	10087
+Groups:	3003 9997 50087 99909997 
+
+## selinux context of termux proc
+u:r:untrusted_app:s0:c512,c768
+## storage
+lrwxrwxrwx 1 u0_a87 u0_a87 28 Nov 21 15:37 /data/data/com.termux/files/home/storage/downloads -> /storage/emulated/0/Download
+
+## wake lock / sshd
+sshd running
+
+## android app sdk
+23
+6.0.1
