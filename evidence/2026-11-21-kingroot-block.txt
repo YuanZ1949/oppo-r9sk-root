@@ -1,0 +1,322 @@
+2026-11-21 KingRoot 启动拦截证据
+设备: OPPO R9sk / R9sk_11_A.37_191127 / Android 6.0.1 / ColorOS 3.0
+采集: ssh r9sk (Termux uid 10087) + PC 侧 baksmali 2.5.2 反编译 services.odex
+
+======================================================================
+1. 现象（实测）
+======================================================================
+
+$ export PATH=/system/bin:$PATH
+$ am start --user 0 -n com.kingroot.kinguser/com.kingroot.kinguser.activitys.SliderMainActivity
+Starting: Intent { cmp=com.kingroot.kinguser/.activitys.SliderMainActivity }
+Warning: Activity not started because the  current activity is being kept for the user.
+
+$ am start --user 0 -n com.kingroot.kinguser/com.kingroot.kinguser.activitys.RootProcessActivity
+Starting: Intent { cmp=com.kingroot.kinguser/.activitys.RootProcessActivity }
+Warning: Activity not started because the  current activity is being kept for the user.
+
+$ am start --user 0 -n com.kingroot.kinguser/com.kingroot.kinguser.activitys.RePackageWarningActivity
+Starting: Intent { cmp=com.kingroot.kinguser/.activitys.RePackageWarningActivity }
+Warning: Activity not started because the  current activity is being kept for the user.
+
+$ am start --user 0 --activity-clear-top -n com.kingroot.kinguser/com.kingroot.kinguser.activitys.SliderMainActivity
+Starting: Intent { flg=0x4000000 cmp=com.kingroot.kinguser/.activitys.SliderMainActivity }
+Warning: Activity not started because the  current activity is being kept for the user.
+
+$ am start --user 0 --activity-reorder-to-front -n ...
+Starting: Intent { flg=0x20000 cmp=com.kingroot.kinguser/.activitys.SliderMainActivity }
+Warning: Activity not started because the  current activity is being kept for the user.
+
+$ am start --user 0 --activity-single-top -n ...
+Starting: Intent { flg=0x20000000 cmp=com.kingroot.kinguser/.activitys.SliderMainActivity }
+Warning: Activity not started because the  current activity is being kept for the user.
+
+$ monkey -p com.kingroot.kinguser -c android.intent.category.LAUNCHER 1
+(无输出，未启动)
+
+对照组（正常）：
+$ am start --user 0 -n com.coloros.safecenter/com.coloros.safecenter.MainActivity
+Starting: Intent { cmp=com.coloros.safecenter/.MainActivity }
+Warning: Activity not started, its current task has been brought to the front
+
+$ am start --user 0 -a android.intent.action.MAIN -c android.intent.category.HOME
+Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] }
+Warning: Activity not started, its current task has been brought to the front
+
+======================================================================
+2. 设备事实（实测）
+======================================================================
+
+$ getprop persist.sys.startupmanager
+(空)
+# 代码默认值 true：SystemProperties.getBoolean("persist.sys.startupmanager", true)
+
+$ getprop persist.sys.assert.panic
+false
+
+$ ls -l /data/system/sys_rom_black_list.xml
+-rw------- system   system       2394 2026-11-21 19:17 sys_rom_black_list.xml
+
+$ ls -l /data/system/tenIntercept.xml
+-rw------- system   system         69 2026-11-21 12:10 tenIntercept.xml
+# 这是腾讯拦截名单，和本次启动拦截不是同一条链
+
+$ cat /data/system/sys_rom_black_list.xml
+cat: /data/system/sys_rom_black_list.xml: Permission denied
+
+$ pm path com.kingroot.kinguser
+package:/data/app/com.kingroot.kinguser-1/base.apk
+
+$ ls -l /data/app/com.kingroot.kinguser-1/base.apk
+-rw-r--r-- system   system   11519732 2025-01-05 13:52 base.apk
+
+KingRoot manifest（PC 侧 AXML 解析）：
+  versionCode = 204
+  versionName = 5.4.0
+  package = com.kingroot.kinguser
+
+KingRoot 签名（META-INF/KINGROOT.RSA）：
+  CN=kingroot, O=kingroot, C=Beijing
+  # 签名主体像官方包；未与官方证书指纹比对，不能据此完全排除重打包
+
+======================================================================
+3. 关键代码（PC 侧反编译 services.odex 内嵌 services.dex）
+======================================================================
+
+3.1 ActivityStackSupervisor.startActivityLocked
+----------------------------------------------------------------------
+    invoke-static {}, Lcom/android/server/am/OppoAppStartupManager;->getInstance()...
+    ...
+    invoke-virtual/range {v6 .. v12}, Lcom/android/server/am/OppoAppStartupManager;->handleStartActivity(Landroid/content/Intent;Landroid/content/pm/ActivityInfo;Ljava/lang/String;III)Z
+    move-result v6
+    if-eqz v6, :cond_134
+    const/16 v39, 0x4
+    ...
+AOSP 6.0.1 ActivityManager.java:
+    public static final int START_SWITCHES_CANCELED = 4;
+
+3.2 OppoAppStartupManager
+----------------------------------------------------------------------
+# 字段初始化（构造函数）
+const-string v0, "persist.sys.startupmanager"
+const/4 v1, 0x1
+invoke-static {v0, v1}, Landroid/os/SystemProperties;->getBoolean(Ljava/lang/String;Z)Z
+move-result v0
+iput-boolean v0, p0, Lcom/android/server/am/OppoAppStartupManager;->mSwitch:Z
+
+# handleStartActivity(Intent, ActivityInfo, callingPackage, callingUid, callingPid, userId)
+iget-boolean v2, p0, Lcom/android/server/am/OppoAppStartupManager;->mSwitch:Z
+if-nez v2, :cond_8
+const/4 v2, 0x0
+return v2
+
+:cond_8
+...
+invoke-static {}, Lcom/android/server/coloros/OppoListManager;->getInstance()...
+invoke-virtual {v2, v5}, Lcom/android/server/coloros/OppoListManager;->isAppStartForbidden(Ljava/lang/String;)Z
+move-result v2
+if-eqz v2, :cond_eb
+
+const-string v4, " is forbidden to start"
+...
+# 仅当 caller 是桌面时弹窗
+const-string v2, "com.oppo.launcher"
+invoke-virtual {v0, v2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+...
+const/16 v2, 0x258
+iput v2, v16, Landroid/os/Message;->what:I
+iput-object v5, v16, Landroid/os/Message;->obj:Ljava/lang/Object;
+iget-object v2, v0, Lcom/android/server/am/OppoAppStartupManager;->mAms:Lcom/android/server/am/ActivityManagerService;
+iget-object v2, v2, Lcom/android/server/am/ActivityManagerService;->mUiHandler:Lcom/android/server/am/ActivityManagerService$UiHandler;
+invoke-virtual {v2, v0}, Lcom/android/server/am/ActivityManagerService$UiHandler;->sendMessage(Landroid/os/Message;)Z
+
+:cond_e8
+const/4 v2, 0x1
+return v2
+
+3.3 OppoListManager
+----------------------------------------------------------------------
+# readRomListFileLocked()
+const-string v13, "data/system/sys_rom_black_list.xml"
+...
+const-string v13, "startForbidden"
+invoke-virtual {v13, v10}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+...
+const/4 v13, 0x0
+const-string v14, "minCode"
+invoke-interface {v7, v13, v14}, Lorg/xmlpull/v1/XmlPullParser;->getAttributeValue(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+move-result-object v5
+const/4 v13, 0x0
+const-string v14, "maxCode"
+invoke-interface {v7, v13, v14}, Lorg/xmlpull/v1/XmlPullParser;->getAttributeValue(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+move-result-object v4
+invoke-interface {v7}, Lorg/xmlpull/v1/XmlPullParser;->nextText()Ljava/lang/String;
+move-result-object v6
+...
+if-nez v5, :cond_68
+const/4 v13, 0x0
+invoke-static {v13}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
+move-result-object v5          # minCode 缺省 "0"
+:cond_68
+if-nez v4, :cond_6c
+const-string v4, "max"        # maxCode 缺省 "max"
+...
+invoke-virtual {v3, v6, v12}, Landroid/util/ArrayMap;->put(...)
+# mStartForbiddenList: pkg -> [minCode, maxCode]
+
+# isAppStartForbidden(pkg)
+iget-object v4, p0, Lcom/android/server/coloros/OppoListManager;->mStartForbiddenList:Landroid/util/ArrayMap;
+...
+invoke-direct {p0, v0, p1}, Lcom/android/server/coloros/OppoListManager;->inAppStartForbiddenCodeList(Ljava/util/List;Ljava/lang/String;)Z
+move-result v3
+
+# inAppStartForbiddenCodeList(codeList, pkg)
+const/4 v4, 0x1
+...
+invoke-static {v3}, Ljava/lang/Integer;->parseInt(Ljava/lang/String;)I
+move-result v3
+if-nez v3, :cond_28
+add-int/lit8 v3, v1, 0x1
+invoke-interface {p1, v3}, Ljava/util/List;->get(I)Ljava/lang/Object;
+...
+const-string v5, "max"
+invoke-virtual {v3, v5}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+move-result v3
+if-eqz v3, :cond_28
+move v3, v4
+return v3                    # minCode==0 && maxCode=="max" -> 全版本封禁
+
+:cond_28
+invoke-direct {p0, p2}, Lcom/android/server/coloros/OppoListManager;->getPackageInfo(Ljava/lang/String;)Landroid/content/pm/PackageInfo;
+move-result-object v2
+...
+# minCode <= versionCode && (maxCode=="max" || versionCode <= maxCode)
+
+3.4 ActivityManagerService$UiHandler
+----------------------------------------------------------------------
+:sswitch_52f                    # case 0x258
+iget-object v0, p1, Landroid/os/Message;->obj:Ljava/lang/Object;
+move-object/from16 v31, v0
+check-cast v31, Ljava/lang/String;
+if-eqz v31, :cond_54c
+invoke-static {}, Lcom/android/server/am/OppoAppStartupManager;->getInstance()...
+invoke-virtual {v3, v0}, Lcom/android/server/am/OppoAppStartupManager;->handleAppStartForbidden(Ljava/lang/String;)V
+
+:cond_54c
+invoke-static {}, Lcom/android/server/am/OppoAppStartupManager;->getInstance()...
+invoke-virtual {v3}, Lcom/android/server/am/OppoAppStartupManager;->getDialogTitleText()Ljava/lang/String;
+...
+invoke-virtual {v3}, Lcom/android/server/am/OppoAppStartupManager;->getDialogContentText()Ljava/lang/String;
+...
+invoke-virtual {v3}, Lcom/android/server/am/OppoAppStartupManager;->getDialogButtonText()Ljava/lang/String;
+...
+new-instance v3, Landroid/app/AlertDialog$Builder;
+...
+const v5, 0xc030007
+invoke-direct {v3, v4, v5}, Landroid/app/AlertDialog$Builder;-><init>(Landroid/content/Context;I)V
+invoke-virtual {v3}, Landroid/app/AlertDialog$Builder;->create()Landroid/app/AlertDialog;
+move-result-object v25
+invoke-virtual/range {v25 .. v25}, Landroid/app/AlertDialog;->getWindow()Landroid/view/Window;
+move-result-object v3
+const/16 v4, 0x7d3          # TYPE_SYSTEM_ALERT
+invoke-virtual {v3, v4}, Landroid/view/Window;->setType(I)V
+const/4 v3, 0x0
+invoke-virtual {v0, v3}, Landroid/app/AlertDialog;->setCancelable(Z)V
+...
+invoke-virtual {v0, v3}, Landroid/app/AlertDialog;->setTitle(Ljava/lang/CharSequence;)V
+invoke-virtual {v0, v3}, Landroid/app/AlertDialog;->setMessage(Ljava/lang/CharSequence;)V
+const/4 v3, -0x1             # BUTTON_POSITIVE
+...
+const/16 v5, 0x30
+invoke-virtual {v0, v5, v1}, Lcom/android/server/am/ActivityManagerService$UiHandler;->obtainMessage(ILjava/lang/Object;)Landroid/os/Message;
+move-result-object v5
+invoke-virtual {v0, v3, v4, v5}, Landroid/app/AlertDialog;->setButton(ILjava/lang/CharSequence;Landroid/os/Message;)V
+invoke-virtual/range {v25 .. v25}, Landroid/app/AlertDialog;->show()V
+
+# case 0x30
+:sswitch_4f7
+iget-object v0, p1, Landroid/os/Message;->obj:Ljava/lang/Object;
+move-object/from16 v23, v0
+check-cast v23, Landroid/app/Dialog;
+invoke-virtual/range {v23 .. v23}, Landroid/app/Dialog;->dismiss()V
+# 按钮只关闭弹窗，没有删除名单项 / 加白名单的回调
+
+3.5 OppoAppStartupManagerUtils
+----------------------------------------------------------------------
+# parseForbidText(text)
+const-string v3, "#"
+invoke-virtual {p1, v3}, Ljava/lang/String;->indexOf(Ljava/lang/String;)I
+move-result v0
+...
+const-string v3, "#"
+add-int/lit8 v4, v0, 0x1
+invoke-virtual {p1, v3, v4}, Ljava/lang/String;->indexOf(Ljava/lang/String;I)I
+move-result v2
+...
+const/4 v3, 0x0
+invoke-virtual {p1, v3, v0}, Ljava/lang/String;->substring(II)Ljava/lang/String;
+move-result-object v3
+iput-object v3, p0, Lcom/android/server/am/OppoAppStartupManagerUtils;->mDialogTitleText:Ljava/lang/String;
+add-int/lit8 v3, v0, 0x1
+invoke-virtual {p1, v3, v2}, Ljava/lang/String;->substring(II)Ljava/lang/String;
+move-result-object v3
+iput-object v3, p0, Lcom/android/server/am/OppoAppStartupManagerUtils;->mDialogContentText:Ljava/lang/String;
+add-int/lit8 v3, v2, 0x1
+invoke-virtual {p1}, Ljava/lang/String;->length()I
+move-result v4
+invoke-virtual {p1, v3, v4}, Ljava/lang/String;->substring(II)Ljava/lang/String;
+move-result-object v3
+iput-object v3, p0, Lcom/android/server/am/OppoAppStartupManagerUtils;->mDialogButtonText:Ljava/lang/String;
+# 格式：标题#正文#按钮
+
+3.6 OppoGuardElf（下载器）
+----------------------------------------------------------------------
+# ConfigUpdateUtil.updateStartForbiddenAppList()
+const-string v1, "sys_rom_black_list"
+invoke-direct {p0, v1}, Lcom/coloros/oppoguardelf/ConfigUpdateUtil;->getDataFromProvider(Ljava/lang/String;)Ljava/lang/String;
+move-result-object v0
+if-eqz v0, :cond_14
+invoke-static {}, Lcom/coloros/oppoguardelf/OppoFileUtil;->getInstance()...
+const-string v2, "/data/system"
+const-string v3, "sys_rom_black_list.xml"
+invoke-virtual {v1, v2, v3, v0}, Lcom/coloros/oppoguardelf/OppoFileUtil;->saveStrToFile(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+
+# getDataFromProvider()
+sget-object v1, Lcom/coloros/oppoguardelf/ConfigUpdateUtil;->CONTENT_URI:Landroid/net/Uri;
+const-string v4, "filtername=\""
+...
+const-string v1, "xml"
+...
+# CONTENT_URI = content://com.nearme.romupdate.provider.db/update_list
+
+======================================================================
+4. 权限 / 可达性（实测）
+======================================================================
+
+$ settings get system activityInterceptSwitch
+Error while accessing settings provider
+java.lang.SecurityException: Permission Denial: Do not have permission in call getContentProviderExternal()
+  ... requires android.permission.ACCESS_CONTENT_PROVIDERS_EXTERNALLY
+
+$ content query --uri content://com.nearme.romupdate.provider.db/update_list --projection xml --where "filtername=\"sys_rom_black_list\""
+Error while accessing provider:com.nearme.romupdate.provider.db
+java.lang.SecurityException: ... requires android.permission.ACCESS_CONTENT_PROVIDERS_EXTERNALLY
+
+$ pm dump com.kingroot.kinguser
+Permission Denial: can't dump ... without permission android.permission.DUMP
+
+# 工程模式 APK（OppoEngineerMode.apk）内搜索：
+#   startupmanager / sys_rom_black_list / startForbidden / activityInterceptSwitch
+# 结果：0 命中
+# → 不能借 system uid 的暗码关掉这条拦截
+
+======================================================================
+5. 未决 / 边界
+======================================================================
+
+- 黑名单条目的具体 minCode/maxCode 不可读（文件 600 system:system）。
+- 弹窗标题/正文/按钮的具体字符串不可读；用户目击标题为「应用存在风险」。
+- 从桌面启动时才弹窗；从 Termux `am start` 时只返回 START_SWITCHES_CANCELED，
+  不弹窗（caller 不是 com.oppo.launcher）。
+- 本记录只证明「本机当前安装的 KingRoot 5.4.0 (204) 被拦」；
+  不证明所有版本都被拦（条目可能是版本区间）。

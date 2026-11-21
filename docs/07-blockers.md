@@ -13,6 +13,7 @@
 | B3 | ZeroTier 无 Android 6 APK | 设备侧组网 | 需要 root + 自行编译 |
 | B4 | opencode2 需要新 Node | 无法运行 | 平台限制，无解 |
 | B5 | 没有 9008 工具与整包固件（loader 已找到） | 无法开始刷机 | 用户下载 + 校验 |
+| **B6** | **KingRoot 被 OPPO ROM 黑名单禁止启动** | 一键 root 连界面都进不去 | 无人（改名单需要 root，死循环）；改用 9008 |
 
 ---
 
@@ -172,6 +173,50 @@ pgrep -f sshd >/dev/null || sshd
 
 > 详细步骤、镜像来源与替代工具链见 `04-9008-edl.md` §9。
 > 原始检索记录见 `evidence/2026-11-21-9008-research.txt`。
+
+---
+
+## B6 · KingRoot 被 OPPO ROM 黑名单禁止启动
+
+### 症状
+
+- 点桌面 KingRoot 图标 → 弹「应用存在风险」，进不去。
+- `am start` 所有 KingRoot 组件 → `Warning: Activity not started because the current activity is being kept for the user.`
+- 但 SafeCenter / HOME 正常 → **不是全局 app switch 被停**，是**按包名**拦截。
+
+### 结论（代码级）
+
+OPPO 在 `system_server` 里加了一条 ROM 黑名单：
+
+```
+ActivityStackSupervisor.startActivityLocked
+  → OppoAppStartupManager.handleStartActivity
+    → OppoListManager.isAppStartForbidden(pkg)   // 读 /data/system/sys_rom_black_list.xml
+      → 命中：return true → START_SWITCHES_CANCELED (4)
+```
+
+- 名单条目格式：`<startForbidden minCode="..." maxCode="...">包名</startForbidden>`。
+- 本机 KingRoot 是 `5.4.0 / versionCode 204`，被命中。
+- 从桌面启动时，`ActivityManagerService$UiHandler` 还会弹一个 `TYPE_SYSTEM_ALERT` 的
+  **不可取消**对话框，标题/正文/按钮来自名单文件（`标题#正文#按钮`）。
+- 按钮 action 固定是 `dismiss()`：**只关弹窗，不放行**。
+
+### 为什么不能点「信任」
+
+- 弹窗没有「信任/白名单」按钮，也没有删除名单项的回调。
+- SafeCenter 的「信任应用 / 加入白名单」是病毒查杀流程，不接管这张 ROM 黑名单。
+- `/data/system/sys_rom_black_list.xml` 是 `600 system:system`，Termux 读不了；
+  写它需要 root —— 而 root 正是目标，形成死循环。
+- 工程模式暗码里也没有 `startupmanager` / `sys_rom_black_list` 相关入口。
+
+### 处理
+
+**不要再在 KingRoot 上花时间。** 它不是「服务挂了所以没用」，而是这台 ROM
+**明确禁止它启动**；即使绕过启动，5.4.0 的旧 exploit 对补丁 2018-06 的内核也无效。
+9008 EDL 不受 Android 层黑名单影响，仍是唯一确定性路径。
+
+> 完整逆向、复现命令与实测/推断标注见 `09-kingroot-rom-blacklist.md`；
+> 原始输出见 `evidence/2026-11-21-kingroot-block.txt`。
 
 ---
 

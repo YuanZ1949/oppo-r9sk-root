@@ -57,9 +57,23 @@
 - 它们的服务端在 2017–2019 年间陆续关闭；客户端现在能做的只有弹广告、装推广包。
 - 即使工具本身还能跑，它依赖的漏洞（Dirty COW、QuadRooter 等）在**补丁 2018-06** 的机器上**已全部修复**（见 `03-cve-analysis.md`）。
 
+### 2026-11-21 补充：本机 ROM 直接禁止 KingRoot 启动
+
+KingRoot 5.4.0（versionCode 204）被 OPPO 的 ROM 黑名单
+`/data/system/sys_rom_black_list.xml` 明确列为 `startForbidden`：
+
+- 点桌面图标只会弹系统「应用存在风险」对话框；
+- `am start` 所有组件都返回 `START_SWITCHES_CANCELED`，连界面都进不去；
+- 弹窗是 OPPO 系统弹的，唯一按钮只关闭弹窗，没有「信任/白名单」入口；
+- 改名单需要 root，形成死循环。
+
+所以它不只是「服务已死」，而是**在这台 ROM 上被系统层禁止启动**。
+完整逆向见 `09-kingroot-rom-blacklist.md`。
+
 ### 判定
 
-**不可行，且有安全风险。** 不建议在这台机器上安装任何此类 APK。
+**不可行，且有安全风险。** 除了服务已死，本机 ROM 还明确禁止它启动；
+不建议在这台机器上安装任何此类 APK。
 
 ---
 
