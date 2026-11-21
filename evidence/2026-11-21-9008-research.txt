@@ -30,7 +30,11 @@ USB 状态（实测）
 9008 进法（多个来源一致）
 --------------------------
   * OPPO 自 R7 起不提供 fastboot；R9s/R9sk 无法用 fastboot 解锁。
-  * 关机 -> 同时按住 音量+ 和 音量- -> 插入 USB -> QUSB_BULK/9008。
+  * 首选：关机 -> 同时按住 音量+ 和 音量- -> 插入 USB ->
+    QUSB_BULK/9008。
+  * 后备：深刷线（D+ 绿线短接 GND 黑线，带开关）或拆机短接尾插/主板 TP。
+    关机插线，短接 3-5 秒后断开；看到 9008 端口就立即断开短接。
+    来源：https://cnblogs.com/sztom/p/10352957.html
   * 来源：
       http://www.romleyuan.com/lec/read?id=142
       https://cnblogs.com/zerofc/p/12263007.html
@@ -94,6 +98,11 @@ TWRP
     blob2（256 字节）可过；每次操作前必须重新进 9008。
     该 kit 在 macOS 测试（SDM660），Windows 未实测。
       https://github.com/HsOjo/edl-noauth-kit
+  * QFIL / QSaharaserver + fh_loader：XDA 有 OPPO R9s 的案例标题
+    （"Use QFIL or Windows 7 64-bit command line tool + QSaharaserver.exe
+    + fh_loader.exe ... to OPPO R9s"），正文返回 403，细节未核实。
+    原理上可直接用 OFP 里的 rawprogram0.xml + 签名 firehose，
+    不依赖 OPPO 的 MsmDownloadTool 授权。仅作线索。
 
 CVE-2021-1905（补充）
 ---------------------
