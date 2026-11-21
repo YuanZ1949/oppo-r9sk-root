@@ -1,0 +1,140 @@
+# Termux / sshd 抗杀加固 —— 实测记录
+# 设备：OPPO R9sk / Android 6.0.1 / Termux uid 10087
+# 时间：2026-11-21 16:1x - 16:3x CST
+
+## 0. 背景
+
+工程模式测试把 Termux 切到后台后，Termux 进程被 LMK 回收，sshd 消失，
+SSH 变成 Connection refused（ping 仍通）。需要让 sshd 在 Termux 存活期间尽量不掉。
+
+---
+
+## 1. 第一个版本（有 bug，已废弃）
+
+判断方式：`pgrep -x sshd`
+
+```bash
+while true; do
+  pgrep -x sshd >/dev/null 2>&1 || sshd
+  sleep 60
+done
+```
+
+### 实测：杀掉监听进程后没有恢复
+
+```
+before: 9432 9759
+after kill: 9759
+waiting for watchdog (max 70s)...
+restarted at ~5s: 9759
+final: 9759
+```
+
+原因：9759 是**当前 SSH 会话的子进程**，名字也叫 `sshd`。
+`pgrep -x sshd` 看到它，就认为 sshd 还活着，于是永远不去拉起监听进程。
+
+结论：**不能用进程名判断，必须判断监听。**
+
+---
+
+## 2. 第二个版本：端口探测（可用，但每次都会空连）
+
+```bash
+if ! timeout 2 bash -c 'exec 3<>/dev/tcp/127.0.0.1/8022' 2>/dev/null; then
+  sshd
+fi
+```
+
+### 实测
+
+```
+listener=9800
+after kill: (空)
+port back after 20s
+final:
+ 9923     1 sshd
+```
+
+恢复成功。但每 30 秒会向 8022 发起一次空连接，sshd 日志会多出
+`kex_exchange_identification: Connection closed by remote host`，噪音太大。
+
+---
+
+## 3. 最终版本：按 ppid 判断监听（已部署）
+
+```bash
+if ! ps -eo ppid=,args= 2>/dev/null \
+     | awk '$1 == 1 && $2 == "sshd" { f = 1 } END { exit !f }'; then
+  sshd >/dev/null 2>&1
+fi
+```
+
+监听进程的特征：**ppid == 1，进程名 sshd**。会话子进程的 ppid 是监听进程，不会被误判。
+
+### 实测
+
+```
+listener=9923
+after kill: (空)
+listener back after 15s
+final: 10024:ppid1
+```
+
+15 秒恢复，且不再有空连接。
+
+---
+
+## 4. 部署内容
+
+| 文件 | 作用 |
+| --- | --- |
+| `~/bin/sshd-watchdog` | 30 秒一轮，监听不在就 `sshd`；pid 写入 `~/var/sshd-watchdog.pid` |
+| `~/.bashrc` 托管块 | 登录时检查监听 + 按 pidfile 拉起看门狗 |
+| `~/.termux/boot/00-start-sshd` | 预留：装了 Termux:Boot 后开机自启 |
+| `~/.bashrc.bak-20261121b` | 修改前备份 |
+
+### `.bashrc` 托管块（最终）
+
+```bash
+# --- opencode-managed ---
+termux-wake-lock 2>/dev/null || true
+
+if ! ps -eo ppid=,args= 2>/dev/null | awk '$1 == 1 && $2 == "sshd" { f = 1 } END { exit !f }'; then
+  sshd >/dev/null 2>&1
+fi
+
+if [ -x "$HOME/bin/sshd-watchdog" ]; then
+  wd_pid=$(cat "$HOME/var/sshd-watchdog.pid" 2>/dev/null)
+  if [ -z "$wd_pid" ] || ! kill -0 "$wd_pid" 2>/dev/null; then
+    nohup "$HOME/bin/sshd-watchdog" >/dev/null 2>&1 &
+  fi
+fi
+
+export PATH="$HOME/bin:$PATH"
+alias ll='ls -lah'
+alias la='ls -A'
+alias ..='cd ..'
+alias gs='git status -sb'
+alias ports='ss -tulnp 2>/dev/null || netstat -tuln'
+# --- end opencode-managed ---
+```
+
+---
+
+## 5. 能力边界
+
+| 场景 | 看门狗能救吗 |
+| --- | --- |
+| sshd 崩溃 / 监听进程被杀 | ✅ 15–30 秒恢复 |
+| 会话子进程退出 | ✅ 不影响监听 |
+| Termux 进程被 LMK 回收 | ❌ 看门狗随 Termux 一起死 |
+| 手机重启 | ❌ 需要 Termux:Boot + 自启动白名单 |
+| 手机断网 / IP 变化 | ❌ 需要重新确认地址 |
+
+---
+
+## 6. 未完成（需要手机屏幕操作）
+
+- 电池白名单：设置 → 电池 → 耗电保护 → Termux → 允许后台运行
+- 自启动白名单：手机管家 → 权限隐私 → 自启动管理 → Termux
+- 安装 Termux:Boot（Android 6 兼容版本）

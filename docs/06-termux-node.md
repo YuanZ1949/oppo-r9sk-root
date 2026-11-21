@@ -79,10 +79,74 @@ crw-rw---- 1 system vpn 10, 200 /dev/tun
 **sshd 随之消失**，SSH 直接 `Connection refused`（ping 仍然通）。
 
 - `.bashrc` 里的 `termux-wake-lock` 只在**有会话时**有效
-- Termux 没有 `Termux:Boot`（需要额外装 App，且 minSdk 可能不兼容），**重启后不会自动起 sshd**
+- Termux 没有 `Termux:Boot`（需要额外装 App），**重启后不会自动起 sshd**
 - 恢复方法：**在手机上打开一次 Termux**，`.bashrc` 会自动拉起 sshd
 
 > 这是本项目「远程控制」最大的不稳定因素：手机端需要人工保活。
+
+### 4.1 已做的加固（2026-11-21）
+
+**① sshd 看门狗** `~/bin/sshd-watchdog`
+
+```bash
+#!/data/data/com.termux/files/usr/bin/bash
+mkdir -p "$HOME/var"
+echo $$ > "$HOME/var/sshd-watchdog.pid"
+while true; do
+  if ! ps -eo ppid=,args= 2>/dev/null | awk '$1==1 && $2=="sshd" {f=1} END {exit !f}'; then
+    sshd >/dev/null 2>&1
+  fi
+  sleep 30
+done
+```
+
+关键点：**不能用 `pgrep -x sshd` 判断**。
+每条 SSH 会话也会产生一个名为 `sshd` 的子进程，`pgrep` 会误判「还活着」；
+必须看 **ppid==1 的监听进程**。
+
+**② `.bashrc` 托管块**（登录时确保监听在、看门狗在）
+
+```bash
+if ! ps -eo ppid=,args= 2>/dev/null | awk '$1==1 && $2=="sshd" {f=1} END {exit !f}'; then
+  sshd >/dev/null 2>&1
+fi
+wd_pid=$(cat "$HOME/var/sshd-watchdog.pid" 2>/dev/null)
+if [ -z "$wd_pid" ] || ! kill -0 "$wd_pid" 2>/dev/null; then
+  nohup "$HOME/bin/sshd-watchdog" >/dev/null 2>&1 &
+fi
+```
+
+**③ 开机自启** `~/.termux/boot/00-start-sshd`
+
+```sh
+#!/data/data/com.termux/files/usr/bin/sh
+termux-wake-lock 2>/dev/null || true
+pgrep -x sshd >/dev/null 2>&1 || sshd
+```
+
+只有装了 **Termux:Boot** 才会执行；当前没装，所以这一步是「预留」。
+
+### 4.2 实测
+
+```bash
+# 杀掉监听进程（不动当前会话）
+kill <listener-pid>
+# 看门狗在 15–20 秒内拉起新监听
+ps -eo pid,ppid,args | awk '$3=="sshd"'
+# → 10024  1  sshd
+```
+
+已验证两次，均自动恢复。**但这只能救「sshd 崩了」，救不了「Termux 被系统杀了」。**
+
+### 4.3 还需要手动做的（没有 root 做不了）
+
+| 事项 | 位置（ColorOS 3.0） | 作用 |
+| --- | --- | --- |
+| 电池白名单 | 设置 → 电池 → 耗电保护 → Termux → 允许后台运行 | 降低被 LMK 回收的概率 |
+| 自启动白名单 | 手机管家 → 权限隐私 → 自启动管理 → Termux | 重启后能自启（配合 Termux:Boot） |
+| 安装 Termux:Boot | 需找兼容 Android 6 的 APK | 让 `~/.termux/boot/` 生效 |
+
+> 这三项都需要在手机屏幕上点，SSH 改不了。
 
 ---
 

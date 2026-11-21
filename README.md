@@ -74,6 +74,7 @@ oppo-r9sk-root/
 │   ├── 2026-11-21-oem-manifest.txt
 │   ├── 2026-11-21-engineermode-actions.txt
 │   ├── 2026-11-21-engineermode-live-test.txt
+│   ├── 2026-11-21-termux-resilience.txt
 │   ├── 2026-11-21-termux-inventory.txt
 │   └── 2026-11-21-termux-privileges.txt
 ├── tools/
