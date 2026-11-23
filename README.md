@@ -3,6 +3,8 @@
 > **研究日期**：2026-11-21
 > **设备**：OPPO R9sk（`R9sk_11_A.37_191127`）/ Android 6.0.1 / ColorOS 3.0 / MSM8953 / 内核 3.18.24
 > **原则**：只读采集，先验证再动手；所有结论标注「实测」或「二手资料」
+> **脱敏**：IMEI → `[REDACTED-IMEI]`，设备序列号 → `244f****`，`net.hostname` → `android-[REDACTED]`，IPv6 EUI-64 → `fe80::[REDACTED]`；
+> `work/`（分区备份、boot 镜像、截图、`magisk.db`、efs/modemst 转储）**不入库**，见 `.gitignore`。
 
 ---
 
