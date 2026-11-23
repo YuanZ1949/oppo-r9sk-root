@@ -8,11 +8,11 @@
 
 | # | 阻塞点 | 影响 | 谁能解决 |
 | --- | --- | --- | --- |
-| **B1** | **USB 不枚举** | adb、9008、fastboot 全部不可用 | **用户**（换线 / 去 OTG / 修尾插） |
+| ~~B1~~ | ~~USB 不枚举~~ **已解除（2026-11-22）** | ~~adb、9008、fastboot 全部不可用~~ | ~~用户~~ 当前卡点转为 B5/B7 |
 | B2 | Termux 被系统杀，sshd 掉线 | 远程操作中断 | 用户（打开一次 Termux） |
 | B3 | ZeroTier 无 Android 6 APK | 设备侧组网 | 需要 root + 自行编译 |
 | B4 | opencode2 需要新 Node | 无法运行 | 平台限制，无解 |
-| B5 | 没有 9008 工具与整包固件（loader 已找到） | 无法开始刷机 | 用户下载 + 校验 |
+| ~~B5~~ | ~~9008 工具链 / TWRP 未就绪~~ **已解除（2026-11-22）**：驱动 + 开源 edl + firehose loader + TWRP 均已就绪并校验 | ~~无法开始刷机~~ | 用户配合进 EDL 做只读探测/备份 |
 | **B6** | **KingRoot 被 OPPO ROM 黑名单禁止启动** | 一键 root 连界面都进不去 | 无人（改名单需要 root，死循环）；改用 9008 |
 
 ---
@@ -83,6 +83,23 @@ ssh r9sk "while true; do echo \$(date +%H:%M:%S) state=\$(cat /sys/class/udc/700
 > **不能**证明数据线坏了。B1 的判据仍然是：
 > 换一根确定传过文件的线 + PC 后置 USB 口，看 Windows 有没有提示音、
 > 设备管理器有没有新设备。若仍然毫无反应，才指向尾插/主板数据线故障。
+
+### 2026-11-22 实测：B1 已解除（实测）
+
+| 项 | 值 | 解读 |
+| --- | --- | --- |
+| 历史节点 | `USB\VID_22D9&PID_276C\244f****`，最后到达 20:47:33、移除 20:47:39 | 数据线/接口**是好的**，之前只是没保持住连接 |
+| 重新插入 | 21:17:49 `Get-PnpDevice -PresentOnly` 看到 3 个节点 | 枚举稳定 |
+| ADB Interface | `MI_01`，`winusb.inf` / `ADB.NT`，`HasProblem=False` | 驱动已自动装好，**不需要再找 ADB 驱动** |
+| MI_00（Android） | Status=Error | MTP/diag 接口驱动缺失，**不影响 adb** |
+| `adb devices -l` | `244f**** device product:R9sk model:OPPO_R9sk device:R9sk` | adb 已授权可用 |
+| `adb shell` | `uid=2000(shell) ... context=u:r:shell:s0` | shell 权限，不是 root |
+| Shizuku | 已安装 `11.0.0.r502.ef747bb`，进程未运行 | 现在**有 adb 了**，Shizuku 可以从「无法启动」改为「可通过 USB 调试启动」，但只是 adb 级权限 |
+| PC 的 9008 驱动 | **2026-11-22 已装**：`oem139.inf`（qcser.inf，v2.1.1.0，WHQL 签名），含 `USB\VID_05C6&PID_9008` | 驱动不再是阻塞点；见 `evidence/2026-11-22-qdloader-driver.txt` |
+
+原始输出见 `evidence/2026-11-22-adb-online.txt`。
+
+> ⚠️ 之前「USB 从未枚举」的结论已作废；现在刷机前的准备重点从修线转为 **B5（9008 驱动 + 工具 + 固件）**。
 
 ### 只有 USB 通了，才能做这些
 
@@ -250,9 +267,12 @@ USB 通了吗？
 
 | 优先级 | 事项 | 需要谁 |
 | --- | --- | --- |
-| P0 | 确认数据线/OTG 情况，让 `adb devices` 能认到机器 | 用户 |
-| P1 | 打开一次 Termux，恢复 SSH | 用户 |
-| P2 | 决定：走 9008（要 root）还是停在 Termux（不要 root） | 用户 |
+| ~~P0~~ | ~~确认数据线/OTG，让 `adb devices` 认到机器~~ **2026-11-22 已完成** | — |
+| ~~P0~~ | ~~安装 Qualcomm HS-USB QDLoader 9008 驱动~~ **2026-11-22 已完成**：`oem139.inf`，WHQL 签名有效 | — |
+| ~~P0~~ | ~~安装开源 edl 工具链~~ **2026-11-22 已完成**：`work/edl/edl.py`（`--serial` 串口模式）+ 依赖 + firehose loader | — |
+| ~~P0~~ | ~~下载 + 校验 TWRP `twrp-3.7.1_12-4-R9s.zip`~~ **2026-11-22 已完成**：SHA-256 `0699a485...` 匹配 SourceForge 公布值，ZIP CRC 全通过，已解压到 `work/twrp-r9s/` | — |
+| **P0** | **用户配合进 9008，先只读探测 `printgpt` + 备份 `aboot`/`recovery`/`efs`/`modem`/`persist`，确认备份可读后才写** | **用户（物理按键进 EDL）+ 本机（edl 命令）** |
+| ~~P2~~ | ~~验证 Shizuku~~ **2026-11-22 已完成**：`shizuku_server` 以 uid shell 运行；安装 Material Files 1.7.5 并完成授权，binder 送达、可列 `/`；但 `/data` 仍无权（shell 本身也无权），不替代 root | — |
 
 ---
 

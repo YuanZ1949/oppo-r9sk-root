@@ -1,0 +1,60 @@
+2026-11-22 9008 驱动准备（实测）
+
+=== 来源 ===
+Microsoft Update Catalog
+  UpdateID: bcdb99c1-fd4a-4ded-a97f-5bcf6e57fb58
+  标题: Qualcomm Incorporated - Other hardware - Qualcomm HS-USB QDLoader 9008
+  驱动版本: 2.1.1.0，日期 2014-01-25，架构 AMD64/X86，分类 Drivers
+  支持: Windows 10 and later drivers / Windows 10 Creators Update and Later Servicing Drivers
+  页面: https://www.catalog.update.microsoft.com/ScopedViewInline.aspx?updateid=bcdb99c1-fd4a-4ded-a97f-5bcf6e57fb58
+
+下载直链（通过 POST DownloadDialog.aspx + updateIDs JSON 取得）:
+  https://catalog.s.download.windowsupdate.com/c/msdownload/update/driver/drvs/2016/04/20855130_dae427ffe0a2d6268aa209d782d05ea874aad0dc.cab
+
+=== 下载与校验 ===
+  保存: work/qualcomm-qdloader-9008.cab
+  大小: 10042674 字节
+  SHA256: 47B5301DCE3E1639C10B8071B381227CE5237FA87973FF0282893D4E03E52FE5
+  解压目录: work/qdloader-9008/
+
+  文件: android_winusb.inf, androidwinusb86.cat, androidwinusba64.cat,
+        qcmdm.inf, qcnet.cat, qcnet.inf, qcser.cat, qcser.inf, source.properties,
+        amd64/, i386/, ndis/, serial/
+
+  qcser.inf 元数据:
+    Class=Modem
+    Provider=%QUALCOMM% (Qualcomm Incorporated)
+    DriverVer=01/25/2014,2.1.1.0
+    Catalogfile=qcser.cat
+  关键硬件 ID（在 qcser.inf 与已安装的 oem139.inf 中均存在）:
+    %QcomDevice90080% = QportInstall00, USB\VID_05C6&PID_9008
+    QcomDevice90080 = "Qualcomm HS-USB QDLoader 9008"
+
+  Authenticode 签名（Get-AuthenticodeSignature）:
+    androidwinusb86.cat: Valid, CN=Microsoft Windows Hardware Compatibility Publisher
+    androidwinusba64.cat: Valid, CN=Microsoft Windows Hardware Compatibility Publisher
+    qcnet.cat:            Valid, CN=Microsoft Windows Hardware Compatibility Publisher
+    qcser.cat:            Valid, CN=Microsoft Windows Hardware Compatibility Publisher
+  => WHQL 签名有效，无需关闭驱动签名强制 / 测试模式。
+
+=== 安装 ===
+  安装前: pnputil /enum-drivers 中无 qdloader/qcser/qualcomm/9008/VID_05C6
+  当前 shell: admin=False，user=WOODYUAN-13700K\yuan，session=1
+  通过 Start-Process -Verb RunAs 弹 UAC 提权执行:
+    pnputil /add-driver C:\MyFile\AICoding\oppo-r9sk-root\work\qdloader-9008\qcser.inf /install
+  结果: 退出码 0；已成功安装驱动程序包；发布名 oem139.inf
+  日志: C:\Users\yuan\AppData\Local\Temp\qdloader-install.log
+
+=== 安装后复核（pnputil /enum-drivers）===
+  已发布名称: oem139.inf
+  原始名称:   qcser.inf
+  提供程序:   Qualcomm Incorporated
+  类:         Ports {4d36e978-e325-11ce-bfc1-08002be10318}
+  驱动程序版本: 01/25/2014 2.1.1.0
+  签名者:     Microsoft Windows Hardware Compatibility Publisher
+  C:\Windows\INF\oem139.inf 含 USB\VID_05C6&PID_9008
+
+=== 结论 ===
+  PC 端 9008 驱动就绪（B5 第一项完成）。
+  尚未进入 EDL —— 线刷包 / TWRP / MsmDownloadTool 仍未准备，
+  在这些工具就绪前不要 reboot edl，避免设备卡在 QDLoader 模式。

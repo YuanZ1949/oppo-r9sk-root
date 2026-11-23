@@ -1,0 +1,87 @@
+2026-11-22 TWRP 镜像选型与来源核查（已完成：下载 + SHA-256 校验 + 解压验证）
+
+=== 结论 ===
+选定 OPPO R9s/k (China) 的 TWRP 3.7.1_12-4，来自 XDA 开发者 rcky844 / TipzTeam，
+SourceForge 项目 tipzbuilds 官方发布页。XDA 主帖明确列出设备变体 "R9s/k (China)"，
+并提供 "3.7.1_12-4 (OPPO R9s/k)" 下载项；中文教程亦注明 R9sk 与 R9s 新版 TWRP 通刷。
+SourceForge 目录: https://sourceforge.net/projects/tipzbuilds/files/Recovery/OPPO%20R9s/TWRP/
+文件页: https://sourceforge.net/projects/tipzbuilds/files/Recovery/OPPO%20R9s/TWRP/twrp-3.7.1_12-4-R9s.zip
+
+=== 文件元数据（SourceForge 文件页实测） ===
+  文件名: twrp-3.7.1_12-4-R9s.zip
+  大小:   35,534,808 字节（HTTP Content-Length，Accept-Ranges: bytes）
+  SHA-256: 0699a485b842d330ad8c9e889073954abf106ff1137ae6ca53f801ae9f16f09c
+  SourceForge 标记: "Scanned for malware"
+  发布日期/目录修改时间: 2025-06-25
+  项目维护者: rickycheung（Tipz Team Builds）
+  源码: https://codeberg.org/TipzTeam/recovery_device_oppo_thortanium
+
+=== 避坑：错误的同名 r9s ===
+  GitHub 仓库 xfwdrev/Action-Recovery-Builder 的 release "twrp-r9s-20260522"
+  （twrp-3.7.1_12-0-r9s.img, 59,056,144 B）**不是** OPPO R9s —— 其 build_twrp.yml
+  克隆的是 android_device_samsung_exynos2100，matrix target "r9s" 实际是
+  三星 Galaxy S21 FE 5G (SM-G990B) 的代号。已取消该镜像下载并删除本地文件。
+
+=== ZIP 内部结构（通过 HTTP Range 读取中央目录得到，未下载全文件时即已确认） ===
+  emmc_appsboot.mbn                 解压 642,312 B   压缩 263,789 B  偏移 0
+  patch0.xml                        解压   6,255 B   压缩     730 B  偏移 263836
+  prog_emmc_firehose_8953_ddr.mbn   解压 359,048 B   压缩 213,003 B  偏移 264606
+  rawprogram0.xml                   解压     628 B   压缩     314 B  偏移 477670
+  recovery.img                      解压 35,722,496 B 压缩 35,056,400 B 偏移 478029
+
+  => recovery.img 占压缩包 98.6%，必须下载整个 zip。
+  => 包内 firehose 与本地 work/loaders/prog_emmc_firehose_8953_ddr.mbn 同为 359,048 B。
+
+=== rawprogram0.xml 实际内容（Range 取出并用 raw-deflate 解压验证） ===
+  只写两个分区：
+    label="aboot"     file="emmc_appsboot.mbn" size=1024 KB start_sector=458752
+    label="recovery"  file="recovery.img"      size=65536 KB start_sector=593920
+  SECTOR_SIZE_IN_BYTES=512, sparse=false
+  => 不会碰 userdata / efs / modem / persist / system。
+
+=== patch0.xml 实际内容 ===
+  仅修正 GPT 主/备头的 LastUseableLBA、分区表末项 userdata 大小、CRC32 等标准字段，
+  涉及 gpt_main0.bin / gpt_backup0.bin / DISK，不写用户分区数据。
+
+=== 安装方式（XDA 原帖 Windows 流程） ===
+  1. 手机关机
+  2. 按住 Power + Vol+ + Vol- 插 USB -> 9008 EDL
+  3. MiFlash 选中解压后的目录（即 rawprogram0.xml + patch0.xml + 两个 mbn/img）
+  4. 完成后拔线，按住 Power + Vol- 进 recovery
+  开源等价命令（bkerler/edl 已装）:
+    edl --serial --loader <firehose> qfil rawprogram0.xml patch0.xml <dir>
+  或分步（更可控，先备份再写）:
+    edl --serial --loader <firehose> r aboot aboot.orig.bin
+    edl --serial --loader <firehose> r recovery recovery.orig.bin
+    edl --serial --loader <firehose> w aboot emmc_appsboot.mbn
+    edl --serial --loader <firehose> w recovery recovery.img
+
+=== 下载状态（已完成并验证） ===
+  SourceForge 单连接仅 ~5-19 KB/s 且 Cloudflare 会拦截无 token 请求。
+  从文件页取得带 ts/fid/st 的直链（phoenixnap.dl.sourceforge.net），
+  用 8 路并行 HTTP Range 分段下载（work/twrp-parts/part00..07.bin），
+  中途因错误的 `-C -` 续传导致一次 CRC 失败，已清空分段后按显式 range 重下。
+  拼接后最终校验：
+    大小:     35,534,808 字节（匹配 Content-Length）
+    SHA-256:  0699a485b842d330ad8c9e889073954abf106ff1137ae6ca53f801ae9f16f09c
+               与 SourceForge 文件页公布值完全一致 -> match=True
+    ZIP CRC:  Python zipfile.testzip() 返回 None（全部成员 CRC 通过）
+  => 镜像可信，已解压到 work/twrp-r9s/ 备用。
+
+=== 解压文件与哈希（work/twrp-r9s/，已完成） ===
+  emmc_appsboot.mbn                 642,312 B  SHA256 81177f5fb2844027...
+  patch0.xml                          6,255 B  SHA256 9640b69462852370...
+  prog_emmc_firehose_8953_ddr.mbn   359,048 B  SHA256 805dc1dcc7f9dd33...
+                                              MD5 1ded75bb22c4e9334462f8be717ac907
+  rawprogram0.xml                       628 B  SHA256 274f84722a86f0f9...
+  recovery.img                    35,722,496 B  SHA256 a86790533459591f...
+
+  镜像头校验:
+    recovery.img       magic = b'ANDROID!'（合法 Android boot/recovery 镜像）
+    emmc_appsboot.mbn  开头 = 7f 45 4c 46（ELF，合法 bootloader）
+
+  === firehose loader 说明 ===
+  包内 prog_emmc_firehose_8953_ddr.mbn (MD5 1ded75bb...) 与本地
+  work/loaders/prog_emmc_firehose_8953_ddr_oppo_r9s.mbn 为同一个文件；
+  本地 work/loaders/prog_emmc_firehose_8953_ddr.mbn (MD5 6e7aac18...) 不是同一个。
+  优先使用 1ded75bb... 版本（R9s 专用，且就在 TWRP 包内）。

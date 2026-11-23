@@ -1,0 +1,74 @@
+2026-11-22 ADB 上线实测（只读采集）
+
+环境：Windows 10.0.29712 / adb 1.0.41 (Version 35.0.1-11580240)
+路径：C:\MyFile\Program\1Alib\adb-platform-tools\adb.exe
+
+--- 历史设备节点（说明数据线/接口本身没问题）---
+Get-PnpDevice | Where-Object InstanceId -match '22D9'
+
+Status       : Unknown
+Class        : USB
+FriendlyName : USB Composite Device
+InstanceId   : USB\VID_22D9&PID_276C\244f****
+LastArrivalDate : 2026/11/22 20:47:33
+LastRemovalDate : 2026/11/22 20:47:39
+
+Status       : Unknown
+Class        : USBDevice
+FriendlyName : ADB Interface
+InstanceId   : USB\VID_22D9&PID_276C&MI_01\7&402636A&0&0001
+Service      : WINUSB
+DriverInfPath: winusb.inf
+DriverInfSection: ADB.NT
+HasProblem   : False
+
+Status       : Unknown
+Class        : (空)
+FriendlyName : Android
+InstanceId   : USB\VID_22D9&PID_276C&MI_00\7&402636A&0&0000
+
+注：以上为 20:47 的历史残留节点，21:15 时 -PresentOnly 查不到任何 22D9 设备。
+
+--- 21:17:49 重新插入后后台监视器捕获 ---
+Get-PnpDevice -PresentOnly | Where-Object InstanceId -match '22D9'
+
+Status Class     FriendlyName         InstanceId
+------ -----     ------------         ----------
+OK     USB       USB Composite Device USB\VID_22D9&PID_276C\244f****
+OK     USBDevice ADB Interface        USB\VID_22D9&PID_276C&MI_01\7&402636A&0&0001
+Error            Android              USB\VID_22D9&PID_276C&MI_00\7&402636A&0&0000
+
+MI_00 带错误（MTP/diag 接口驱动缺失），不影响 adb。
+
+--- adb devices -l ---
+List of devices attached
+244f****               device product:R9sk model:OPPO_R9sk device:R9sk transport_id:1
+
+adb get-state → device
+
+--- adb shell 只读采集 ---
+uid=2000(shell) gid=2000(shell) groups=2000(shell),1004(input),1007(log),1011(adb),
+1015(sdcard_rw),1028(sdcard_r),3001(net_bt_admin),3002(net_bt),3003(inet),3006(net_bw_stats)
+context=u:r:shell:s0
+
+ro.product.model              = OPPO R9sk
+ro.build.version.release      = 6.0.1
+ro.build.version.security_patch = 2018-06-05
+persist.sys.usb.config        = diag,adb
+sys.usb.config                = diag,adb
+sys.usb.state                 = diag,adb
+/dev/tun                      = Permission denied
+
+--- 已安装包（关键项）---
+package:moe.shizuku.privileged.api   versionCode=502 versionName=11.0.0.r502.ef747bb
+package:com.oppo.engineermode
+package:com.termux
+
+Shizuku 进程未运行；/sdcard/Android/data/moe.shizuku.privileged.api/files/ 不存在
+（需要在 App 内点一次「通过 USB 调试启动」才会生成 start.sh）。
+
+--- PC 侧 9008 驱动 ---
+pnputil /enum-drivers | Select-String 'qdloader|qcusbser|qualcomm|hs-usb|9008' → 无结果
+Get-PnpDevice | Where-Object FriendlyName -match '9008|QDLoader|Qualcomm' → 无结果
+
+结论：B1（USB 不枚举）已解除；adb 可用。9008 仍需另装 Qualcomm HS-USB QDLoader 驱动。

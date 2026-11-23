@@ -8,11 +8,37 @@
 
 ## 一句话结论
 
-**这台机器能 root，但只有一条路：9008 EDL 线刷解锁版 `aboot` + TWRP + root 包。**
+**这台机器已经拿到 root（2026-11-24 实测）：Magisk 23.0 + BL 解锁，App 级授权、模块、MagiskHide 全部可用。**
+唯一可行的路线是：9008 EDL 线刷解锁版 `aboot` → TWRP → Magisk 23.0。
 其余所有路线（官方解锁、fastboot、一键 root、Shizuku、工程模式、公开 CVE）**全部走不通或不可交付**，原因各不相同，逐条列在下面。
 
-而且**这条路当前被同一个物理问题卡住**：手机插上电脑后 USB 层从未枚举成功（无设备节点、无提示音），
-所以 adb 和 9008 同时不可用。**在解决数据线/接口问题之前，任何刷机动作都无法开始。**
+| 验收项 | 实测结果 |
+| --- | --- |
+| root | `su -c id` → `uid=0(root) gid=0(root) context=u:r:magisk:s0`，不弹授权框 |
+| Magisk | `23.0:MAGISK` / `23000`，`/sbin/su`、`/sbin/magisk` 在位 |
+| 授权记录 | `policies`: uid 2000（`com.android.shell`）→ `policy=2 (ALLOW)` |
+| MagiskHide | `MagiskHide is enabled`，重启保持 |
+| Magisk App | `com.topjohnwu.magisk` @ `/data/app/com.topjohnwu.magisk-2/base.apk` |
+| 模块系统 | `magisk --install-module` 实测可用 |
+| 开机 | `boot_completed=1` 28s（健康基线 25–31s） |
+| BL | `/proc/cmdline` → `androidboot.verifiedbootstate=orange`（已解锁） |
+| SELinux | `Enforcing` |
+
+证据链：`docs/11-boot-hang-analysis.md`（卡 logo 的真实根因）、`docs/12-magisk-success.md`（Magisk 装法与启动验证）、
+`docs/13-magisk-app-and-coloros-install-gate.md`（Magisk App 安装 + 击穿 ColorOS「验证身份」拦截）。
+
+> 注：开机后 `getprop ro.boot.verifiedbootstate` 报 `green` 是 **Magisk 做的属性伪装**（`/sbin/magisk32`、`/sbin/magisk64` 内含该字符串），
+> 真实状态以 `/proc/cmdline` 的 `androidboot.verifiedbootstate=orange` 为准。
+
+**历史（2026-11-22）**：~~手机插上电脑后 USB 层从未枚举成功，所以 adb 和 9008 同时不可用。~~
+**（2026-11-22 更新）USB/adb 已打通**：数据线接 PC 后置口后可稳定枚举，`adb devices` 能认到
+`244f**** device product:R9sk model:OPPO_R9sk`，`adb shell` 可用（uid 2000/shell）。
+详见 `evidence/2026-11-22-adb-online.txt`。**9008 驱动已装好**（`oem139.inf`，WHQL 签名，
+`evidence/2026-11-22-qdloader-driver.txt`），**开源 bkerler/edl 工具链也已就绪**（支持 `--serial`，
+不再需要 MsmDownloadTool 或 Zadig）。**TWRP `twrp-3.7.1_12-4-R9s.zip` 已下载并通过
+SHA-256 + ZIP CRC 双重校验、已解压**（见 `evidence/2026-11-22-twrp-source.txt`）。
+PC 端准备全部就绪。**后续（2026-11-23/24）已全部执行完毕**：只读备份 7 个分区、写 TWRP、解锁 BL、
+装 Magisk 23.0、装 App 并授权，详见下面「现在该做什么」。
 
 ---
 
@@ -23,10 +49,10 @@
 | OPPO 官方 BL 解锁 / 深度测试 | ❌ 不支持 | 深度测试只覆盖 R11 之后机型；R9s 系列最高 ColorOS 3.0（Android 6） |
 | `fastboot oem unlock` | ❌ 命令被阉割 | OPPO 在 aboot 中移除该命令，无 fastboot 解锁通道 |
 | 一键 root（KingRoot / 奇兔 / 各类「免解锁」工具） | ❌ 已失效（本机还禁止 KingRoot 启动，换版本也无效） | 服务端/漏洞链早已下线；本机 `sys_rom_black_list.xml` 按包名拦截，公开 dump 里 KingRoot 条目是 `0,max`（全版本），弹窗按钮只关闭不放行（`docs/09-kingroot-rom-blacklist.md`） |
-| **9008 EDL + 解锁 aboot + TWRP + SuperSU/Magisk** | ✅ **唯一可行** | 同平台（R9st / MSM8953 / 3.18.24）有 2026-07 实操记录；R9sk 有对应教程 |
+| **9008 EDL + 解锁 aboot + TWRP + Magisk 23.0** | ✅ **已实现（2026-11-24 实测）** | 同平台（R9st / MSM8953 / 3.18.24）有 2026-07 实操记录；本机 `su -c id` = `u:r:magisk:s0`（`docs/12`、`docs/13`） |
 | 工程模式后门（`com.oppo.engineermode`） | ⚠️ 有真实缺陷，但**拿不到 root** | 存在未加权限保护的广播接收器，可越权改系统属性/拉起受保护页面；进程是 `system` uid 而非 root |
 | 公开内核 CVE（CVE-2019-2215 等） | ❌ **已实测证伪，不能当交付路径** | 漏洞、UAF、对象回收均实测成立；但 `writev`/`readv` 对合法内核地址双向 EFAULT，改写变不成任何读写原语（G2 失败），`PTE_PXN` 另封死 ret2usr/ret2heap（见 `docs/08-cve-lab.md` §3.4、§11） |
-| Shizuku（免 root 的 adb 权限代理） | ❌ 无法启动 | 启动必须依赖 adb 或 root，两者都没有 |
+| Shizuku（免 root 的 adb 权限代理） | ✅ 链路打通，但仍不是 root | 2026-11-22 装了 Material Files 1.7.5（F-Droid 签名）并完成 Shizuku 授权，binder 已送达；能列 `/`，但 `/data` 仍 `AccessDeniedException`（shell 也没权限）。重启后需重跑 start.sh |
 | ZeroTier / OpenVPN（设备侧） | ❌ 无 root 时不可用 | `/dev/tun` 属 `system:vpn`，Termux uid 10087 无权限；ZeroTier 官方无 Android 6 版 APK |
 | opencode2 / 现代 Node 工具链 | ❌ 平台不支持 | Android 6 + arm64 + Node 12，最低要求普遍是 Node 18+/API 24+ |
 
@@ -46,8 +72,8 @@
 | `/proc/kallsyms` | 167148 条，**地址全 0** | 内核符号被隐藏，漏洞利用拿不到基址 |
 | `perf_event_paranoid` | `3` | 堵掉一大类信息泄漏/利用原语 |
 | `/data` | `dm-0` 加密 | 备份/取证只能在开机态做 |
-| `verifiedbootstate` | `green` | BL 锁定、验证启动正常 |
-| su | **不存在** | 没有任何现成提权入口 |
+| `verifiedbootstate` | **`orange`**（已解锁） | `getprop` 报 `green` 是 Magisk 的属性伪装，真实值看 `/proc/cmdline` |
+| su | **Magisk 23.0**（`/sbin/su`，域 `u:r:magisk:s0`） | 出厂无 su，root 由 9008 + TWRP + Magisk 取得 |
 
 完整 `getprop`、系统包列表、setuid 二进制清单见 `evidence/2026-11-21-device-props.txt`。
 
@@ -72,7 +98,11 @@ oppo-r9sk-root/
 │   ├── 06-termux-node.md         ← Termux 现状、能做什么、卡在哪
 │   ├── 07-blockers.md            ← 当前阻塞点与决策树
 │   ├── 08-cve-lab.md             ← CVE-2019-2215 实机可利用性实验（实测断点）
-│   └── 09-kingroot-rom-blacklist.md ← KingRoot 被 ROM 黑名单拦截的完整逆向
+│   ├── 09-kingroot-rom-blacklist.md ← KingRoot 被 ROM 黑名单拦截的完整逆向
+│   ├── 10-system-root.md         ← /system 模式 root（rootd，已弃用，仅存档）
+│   ├── 11-boot-hang-analysis.md  ← 卡 OPPO logo 的真实根因（SELinux 标签 → installd）
+│   ├── 12-magisk-success.md      ← Magisk 23.0 装法与启动验证
+│   └── 13-magisk-app-and-coloros-install-gate.md ← App 安装 + 击穿 ColorOS 验证拦截
 ├── evidence/                     ← 实机采集的原始输出（只读）
 │   ├── 2026-11-21-device-props.txt
 │   ├── 2026-11-21-engineermode-surface.txt
@@ -97,20 +127,32 @@ oppo-r9sk-root/
 
 ## 现在该做什么
 
-**按顺序，不要跳步：**
+**全部步骤已完成（2026-11-24）。** 保留原清单作为复盘：
 
-1. **解决 USB**（`docs/07-blockers.md`）
-   换一根确认能传数据的 Micro-USB 线，**拔掉 OTG 转接头**，插电脑听有没有提示音。
-   → 没有声音 = 线/口/尾插问题，先修物理层，别谈刷机。
-2. **USB 通了之后先验证普通模式**（`adb devices` 能认到机器），再进 9008。
-3. **备份**：进 TWRP 第一件事备份 `efs` / `modem` / `persist`，再动 root。
-4. root 之后才有资格谈 ZeroTier / OpenVPN / 远程节点。
+1. ~~解决 USB~~ **已完成（2026-11-22）**：`adb devices` 已认到 `244f****`，`adb shell` 可用。
+   若再次断开，先查 OTG / 数据线 / PC 后置口（`docs/07-blockers.md`）。
+2. ~~准备 9008 工具链~~ **已完成**：✅ Qualcomm HS-USB QDLoader 9008 驱动（`oem139.inf`，WHQL 签名）；
+   ✅ 开源 edl（`work/edl/edl.py`，`--serial` 串口模式）；✅ firehose loader 在 `work/loaders/`；
+   ✅ TWRP `twrp-3.7.1_12-4-R9s.zip` 已下载校验（`evidence/2026-11-22-twrp-source.txt`）。
+3. ~~进 EDL 只读~~ **已完成**：`printgpt` + 7 个分区只读备份（`work/backup/`）。
+4. ~~备份~~ **已完成**：`aboot` / `recovery` / `modem` / `modemst1/2` / `fsg` / `persist` 全部有 SHA256 记录。
+5. ~~root~~ **已完成**：解锁 BL（`oem unlock-go` → `orange`）→ TWRP → Magisk 23.0 → App 授权。
+
+**后续可做（都已有前提条件）：**
+
+- ZeroTier / OpenVPN：现在有 root，`/dev/tun`（`system:vpn`）可通过 `chown`/SELinux 策略处理。
+- 去预装 / 改 hosts / 模块：Magisk 模块系统实测可用（`magisk --install-module`）。
+- 银行类 App 隐藏 root：MagiskHide 已启用，按需在 App 里勾选目标。
+- ⚠️ **不要**在 Magisk App 里点「安装」升级到 24+：会失去 MagiskHide 且需要重新打补丁；23.0 是最后一代自带 Hide 的版本。
 
 **不建议现在做的：**
 
 - ❌ 不要下载来源不明的「一键 root」「免解锁 root」工具往手机上装
-- ❌ 不要用 R9s / R9st 的 aboot 刷 R9sk
+- ❌ 不要用来源不明的 R9s / R9st `aboot` 刷 R9sk。唯一例外是当前选定的
+  **R9s/k 专用 TWRP 包内的 `emmc_appsboot.mbn`**（XDA 原帖明确 R9s/k 通刷），
+  且写入前必须先把原机 `aboot` 读出来备份
 - ❌ 不要在没备份 efs 的情况下刷任何东西
+- ❌ 注意 GitHub 上名为 `r9s` 的 TWRP 可能是**三星 S21 FE** 的代号（见证据文件）
 - ❌ 不要指望 CVE 路线能「今晚搞定」——2026-11-21 已实测证伪：G2（把改写变成读写原语）双向失败，不是改几行 PoC 的事
 
 ---

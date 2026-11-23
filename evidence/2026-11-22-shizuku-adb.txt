@@ -1,0 +1,79 @@
+2026-11-22 Shizuku 免 root 启动实测（adb 通道）
+
+设备：OPPO R9sk / Android 6.0.1 / Shizuku 11.0.0.r502.ef747bb (versionCode 502)
+
+--- 前置条件 ---
+adb 已授权：adb get-state → device
+Shizuku 包：moe.shizuku.privileged.api，安装路径 /data/app/moe.shizuku.privileged.api-1/base.apk
+APK 内资源：res/raw/start.sh、assets/starter.dex、assets/server.dex
+
+--- 界面操作 ---
+用 am start 打开 MainActivity 后，uiautomator dump 显示选项：
+  - 通过连接电脑启动（使用 adb）
+  - 通过无线调试启动
+  - 查看指令
+点击「查看指令」后 App 显示确切命令：
+  adb shell sh /data/user/0/moe.shizuku.privileged.api/start.sh
+
+脚本已由 App 生成：
+  -rw-r--r-- u0_a135 u0_a135 928 2026-11-22 21:20 /data/user/0/moe.shizuku.privileged.api/start.sh
+  STARTER_PATH="/data/user/0/moe.shizuku.privileged.api/starter-v11"
+  STARTER_PARAM="--server-dex=.../server-v11.dex --starter-dex=.../starter-v11.dex"
+
+--- 执行 ---
+> adb shell sh /data/user/0/moe.shizuku.privileged.api/start.sh
+info: start.sh begin
+info: starter is /data/user/0/moe.shizuku.privileged.api/starter-v11
+info: starting server...
+info: shizuku_starter exit with 0
+
+生成 /data/local/tmp/shizuku_starter (-rwx------ shell shell, 18448B)
+
+--- 结果（实测）---
+ps | grep shizuku:
+  u0_a135 8139 ... moe.shizuku.privileged.api
+  shell   9306 ... shizuku_server        ← 以 shell(uid 2000) 运行，不是 root
+
+App 界面：「Shizuku 正在运行」「版本 11，adb」「已授权 0 个应用」
+
+--- 天花板 ---
+1. 第三方包中请求 moe.shizuku.manager.permission.API_V23 的只有 Shizuku 自己，
+   没有任何已安装的客户端 App 能消费这个 API。
+2. 权限等级 = adb shell（uid 2000, context u:r:shell:s0），不是 root：
+   /dev/tun 仍 Permission denied，无法写 /system，无法开 VPN 接口。
+3. 重启失效：非 root 设备每次开机都要重新执行 start.sh（这是 Shizuku 的设计）。
+4. service list 里看不到名为 shizuku 的系统服务（Shizuku 用自己的 binder 通道）。
+
+结论：Shizuku 启动成功，但当前没有客户端可用；它不提供 root，也不解锁 ZeroTier/OpenVPN 路径。
+
+--- 追加：安装客户端并验证（同日晚）---
+候选：Material Files v1.7.5 (versionCode 40)，F-Droid 构建
+  来源 https://mirror.fcix.net/fdroid/repo/me.zhanghai.android.files_40.apk
+  大小 10944578 B，SHA256 2FE900BF43D725B655008D438F5CA46D0DA0F301E3784403B5B96C3FC2DF6E8A
+  签名 CN=FDroid, O=fdroid.org（apksigner verify --print-certs）
+  证书 SHA-256 9c22a742fa200c85bafbc9924a02ddc8f3a0b975d4d7b5a8da21d7cf34ce2b20
+  aapt dump badging: package=me.zhanghai.android.files versionCode=40 versionName=1.7.5
+                     sdkVersion='23' targetSdkVersion='36'
+                     uses-permission moe.shizuku.manager.permission.API_V23
+
+安装：
+  adb install 卡在 OPPO 安装器确认页（按钮未渲染），改用
+  adb shell pm install -r /data/local/tmp/material-files-40.apk → Success
+  adb shell pm grant me.zhanghai.android.files moe.shizuku.manager.permission.API_V23 → granted=true
+
+授权流程：Material Files 抽屉出现「根目录」→ 弹出 Shizuku 自己的授权框
+  「要允许质感文件使用 Shizuku 吗？」→ 选「始终允许」
+  logcat 确认：
+    11-22 22:10:05 D ShizukuProvider: binder received
+    11-22 22:10:05 I ShizukuServer: send binder to user app me.zhanghai.android.files in user 0
+    11-22 22:13:33 I ActivityManager: START ... REQUEST_PERMISSION ... from uid 2000 and from pid 9306
+
+实测能力：
+  ✅ 可列出根目录 / ：acct, cache, config, d, data, dev, dsp ...
+  ❌ 打开 /data 失败：java8.nio.file.AccessDeniedException: /data: opendir: Permission denied
+     对照：adb shell 'ls /data' 同样 Permission denied（/data 是 drwxrwx--x system:system）
+
+最终判定：
+  Shizuku 客户端链路完全打通（binder 已送达、授权完成），但权限仍等于 adb shell：
+  shell 能读的（如 /data/local/tmp）App 通过 Shizuku 也能读，shell 不能读的（/data）依然不能读。
+  因此它**不能**替代 root，也不解锁 ZeroTier/OpenVPN（/dev/tun 仍 Permission denied）。
