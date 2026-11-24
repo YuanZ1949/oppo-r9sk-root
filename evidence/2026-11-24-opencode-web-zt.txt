@@ -1,0 +1,170 @@
+# 2026-11-24 · OpenCode 2 web 服务开机自启 + 局域网/ZeroTier 双通道验收 + ZeroTier 直连路由真因
+
+设备：OPPO R9sk（Android 6.0.1 / 内核 3.18.24 / Magisk 23.0）
+chroot：Debian 12.15 arm64 @ /data/debian，会话用户 `yuan`(uid 2000)
+采集：`adb shell su -c '…'`（Android 侧）+ PC 侧 `curl` / `ssh`
+
+---
+
+## 1. 目标与验收口径
+
+| 需求 | 验收方式 | 结果 |
+| --- | --- | --- |
+| OpenCode 开机自启 | `adb reboot` 后轮询 `http://192.168.2.205:4300/` | ✅ 26.1 s 返回 200 |
+| web 账号与本机一致 | PC `service.json` 的密码对手机 4300 做 Basic 认证 | ✅ 200（错密码 401） |
+| 局域网可访问 | PC(192.168.2.161) → 192.168.2.205:4300 | ✅ 200 / 31–219 ms |
+| 虚拟局域网可访问 | PC → 192.168.193.5:4300（ZeroTier 托管 IP） | ✅ 200 / 89 ms |
+| 不影响既有服务 | sshd:2222、nginx:8080、ZeroTier:9993 | ✅ 全部照旧 |
+
+---
+
+## 2. 开机时间线（`adb reboot` 起算，最后一次验证）
+
+```
+ssh 2222 (TCP 可连)   : 26.1 s
+web  4300 (HTTP 200)  : 26.1 s
+zt 策略规则 21000      : 26.1 s
+ZT   4300 (HTTP 200)  : 26.1 s
+```
+
+设备侧开机日志 `/data/local/tmp/server.log`（本次开机）：
+
+```
+[2026-11-24 12:18:14] zerotier: start rc=0
+[2026-11-24 12:18:14] zerotier: policy-rule watcher started (bg)
+[2026-11-24 12:18:14] zerotier: policy rule added (cached): to 192.168.193.0/24 lookup main
+[2026-11-24 12:18:14] zerotier: diag: route=[192.168.2.0/24 dev wlan0  proto kernel  scope link  src 192.168.2.205 ;]
+[2026-11-24 12:18:16] zerotier: diag: route=[192.168.2.0/24 dev wlan0 … ;192.168.193.0/24 dev ztyqb623ap … src 192.168.193.5 ;]
+[2026-11-24 12:18:18] zerotier: diag: route=[…]
+Starting Control Plane...
+server listening on http://0.0.0.0:4300
+```
+
+> 说明：`policy rule added (cached)` 用的是上次记住的子网（`/data/local/tmp/zt-subnet.txt`），
+> 所以规则在 ZT 接口出现之前就已就位；`diag` 行证明 2 s 后 zt 路由出现。
+
+---
+
+## 3. 设备侧状态快照
+
+```
+### opencode version
+opencode v2.2.5
+
+### ps（降权到 uid 2000，ppid 1，已脱离调用者会话）
+ 1322     1 shell    356m /usr/local/bin/opencode serve --hostname 0.0.0.0 --port 4300 --service
+
+### netstat
+tcp        0      0 0.0.0.0:4300            0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:2222            0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:9993            0.0.0.0:*               LISTEN
+tcp        0      0 :::8080                :::*                    LISTEN
+tcp        0      0 :::9993                :::*                    LISTEN
+
+### ip rule（21000 = 本次新增，ZT 子网查 main 表）
+21000:	from all to 192.168.193.0/24 lookup main
+
+### ip -4 route show（main 表）
+192.168.2.0/24 dev wlan0  proto kernel  scope link  src 192.168.2.205
+192.168.193.0/24 dev ztyqb623ap  proto kernel  scope link  src 192.168.193.5
+
+### ZeroTier
+200 info 23697636b0 1.16.2 ONLINE
+200 listnetworks 8bd5124fd6ff23d9 My da:00:96:a0:79:a2 OK PRIVATE ztyqb623ap 192.168.193.5/24
+
+### zerotier-cli peers（PC 为 8c9fe6aa1c / 192.168.2.161，直连路径）
+<ztaddr>   <ver>  <role> <lat> <link>   <lastTX> <lastRX> <path>
+26ce344cb7 1.14.0 LEAF      61 DIRECT   …         240e:47e:3ad0:bb10:28fe:15ff:fe7a:fba7/9994
+778cde7190 -      PLANET   247 DIRECT   …         103.195.103.66/9993
+8bd5124fd6 1.16.2 LEAF     232 DIRECT   …         35.209.108.188/21012
+8c9fe6aa1c 1.16.1 LEAF      14 DIRECT   …         192.168.2.161/47197
+cafe04eba9 -      PLANET   231 DIRECT   …         2a02:6ea0:d405::9993/9993
+
+### service.d
+-rwxr-xr-x root root 4032 10-server.sh
+-rwxr-xr-x root root 1144 20-nginx.sh
+-rwxr-xr-x root root 3967 30-zerotier.sh
+-rwxr-xr-x root root 2653 40-opencode-web.sh
+
+### 内存
+              total        used        free      shared  buff/cache   available
+Mem:           3595        1412         779           6        1402        2091
+```
+
+---
+
+## 4. PC 侧访问实测
+
+```
+LAN  4300 web      200  0.219360s
+LAN  4300 api(no)  401
+LAN  4300 api(ok)  200  0.031793s     # -u opencode:<service.json 密码>
+LAN  4300 api(bad) 401
+ZT   4300 web      200  0.088795s
+ZT   4300 api(ok)  200
+ZT   8080 nginx    200
+LAN  8080 nginx    200
+
+$ ssh -p 2222 yuan@192.168.2.205 id
+uid=2000(yuan) gid=2000(yuan) groups=2000(yuan),1015(sdcard_rw),1023(media_rw),3003(aid_inet),3004(aid_net_raw)
+```
+
+web 认证方式 = **HTTP Basic**（`WWW-Authenticate: Basic realm="Secure Area"`），
+用户名固定 `opencode`，密码读 `<config>/service.json`（与 PC 同一份口令）。
+`/api/health`、`/health` 不需要认证；`/api/*` 其余路径 401。
+
+---
+
+## 5. 本轮修掉的三个真问题
+
+### 5.1 `opencode serve` 起了又没了 —— 缺 `setsid`
+
+现象：日志里出现过 `server listening on http://0.0.0.0:4300`，几秒后进程消失、端口没了。
+原因：`serve` 是**前台进程**，用 `&` 放在 `adb shell`/`service.d` 的子 shell 里时，
+调用者退出会把它连带杀掉（进程组/会话一起收）。
+修法：`/usr/bin/setsid /usr/bin/setpriv --reuid=2000 … opencode serve …`，进程 `ppid=1` 后稳定常驻。
+
+### 5.2 ZeroTier online 但局域网/虚拟网互不可达 —— Android 策略路由
+
+现象：`zerotier-cli info` 是 ONLINE、`listnetworks` 是 OK，但手机 ping 不通任何 zt 地址，
+PC 访问 `192.168.193.5:4300` 失败；`tcpdump -i wlan0` 只看到手机在跟 planet 服务器（185.152.67.145、
+103.195.103.66 等）打 UDP 9993，从未与局域网内的对端（192.168.2.161）直接通信。
+
+原因：Android 的 netd 只给进程查 per-network 表（`ip rule … lookup wlan0`），而
+wlan0 表里只有默认路由，**main 表里才有 `192.168.193.0/24 dev ztyqb623ap`**。
+没有额外规则时，发往 zt 子网的包被 wlan0 的默认路由带走、然后在 LAN 上被丢弃。
+
+修法：`ip rule add to 192.168.193.0/24 lookup main priority 21000`。
+加了之后同一份 `peers` 输出里立刻出现 `8c9fe6aa1c … 192.168.2.161/47197`（DIRECT，14 ms），
+PC 访问 ZT 地址 89 ms。
+
+### 5.3 开机脚本里规则永远加不上 —— Android 7.1 没有 `awk`
+
+`ip -4 route show | awk …` 在 service.d 里恒为空。排查发现：
+
+```
+$ ls /system/bin/awk
+/system/bin/awk: No such file or directory
+$ busybox --list | grep -x awk
+awk
+```
+
+Android 7.1 的 toybox 不带 awk，而 Magisk 自带 busybox 有。改成 `$BB awk` 后正常。
+另外两个细节：
+
+1. main 表里**没有** `default` 路由（default 在 netd 的 per-network 表），
+   开机等待网络不能用 `ip route show | grep '^default '`，要等 `ip -4 addr show wlan0` 出现 `inet`。
+2. ZT 接口出现时间不固定（网络就绪前启动要 2 min 以上），所以「补规则」必须放后台子 shell，
+   并把子网写进 `/data/local/tmp/zt-subnet.txt`：下次开机先用缓存把规则加上，接口一出现即通。
+   规则加好后每 5 分钟复核一次（netd 重启/切网会清掉自定义规则）。
+
+---
+
+## 6. 密码与仓库
+
+- 手机 `/home/yuan/.config/opencode/service.json` 与 PC `%USERPROFILE%\.config\opencode\service.json`
+  **同一口令**；文件权限 600、属主 2000。
+- 该文件**不入库**：`git grep` 对口令命中 0（仓库只放脚本和文档）。
+- Basic 认证在明文 HTTP 上传输：局域网内可被抓包；ZeroTier 通道本身是加密的。
+  只在内网/虚拟网使用，不要在路由器上把 4300 映射到公网。

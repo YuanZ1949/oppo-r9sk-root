@@ -55,8 +55,8 @@ PC 端准备全部就绪。**后续（2026-11-23/24）已全部执行完毕**：
 | 工程模式后门（`com.oppo.engineermode`） | ⚠️ 有真实缺陷，但**拿不到 root** | 存在未加权限保护的广播接收器，可越权改系统属性/拉起受保护页面；进程是 `system` uid 而非 root |
 | 公开内核 CVE（CVE-2019-2215 等） | ❌ **已实测证伪，不能当交付路径** | 漏洞、UAF、对象回收均实测成立；但 `writev`/`readv` 对合法内核地址双向 EFAULT，改写变不成任何读写原语（G2 失败），`PTE_PXN` 另封死 ret2usr/ret2heap（见 `docs/08-cve-lab.md` §3.4、§11） |
 | Shizuku（免 root 的 adb 权限代理） | ✅ 链路打通，但仍不是 root | 2026-11-22 装了 Material Files 1.7.5（F-Droid 签名）并完成 Shizuku 授权，binder 已送达；能列 `/`，但 `/data` 仍 `AccessDeniedException`（shell 也没权限）。重启后需重跑 start.sh |
-| ZeroTier / OpenVPN（设备侧） | ❌ 无 root 时不可用 | `/dev/tun` 属 `system:vpn`，Termux uid 10087 无权限；ZeroTier 官方无 Android 6 版 APK |
-| opencode2 / 现代 Node 工具链 | ❌ 平台不支持 | Android 6 + arm64 + Node 12，最低要求普遍是 Node 18+/API 24+ |
+| ZeroTier / OpenVPN（设备侧） | ❌ 无 root 时不可用 → **root 后已在 chroot 内跑通** | `/dev/tun` 属 `system:vpn`，Termux uid 10087 无权限；ZeroTier 官方无 Android 6 版 APK。root 后在 Debian chroot 里装 arm64 版（`docs/15`） |
+| opencode2 / 现代 Node 工具链 | ❌ 平台不支持 → **改用 arm64 单文件二进制** | Android 6 + arm64 + Node 12，最低要求普遍是 Node 18+/API 24+；opencode 2.2.5 的 arm64 平台包是静态二进制，不需要 Node（`docs/15`） |
 
 ---
 
@@ -110,7 +110,8 @@ oppo-r9sk-root/
 ├── scripts/                      ← 部署到设备上的脚本（可直接复用）
 │   ├── 10-server.sh              ← /data/adb/service.d 开机自启（挂载 + 网络组 + sshd + 无线 adb 兜底）
 │   ├── 20-nginx.sh               ← 可选：开机以 yuan 身份拉起 nginx:8080
-│   ├── 30-zerotier.sh            ← 可选：开机拉起 ZeroTier（含 /dev/net/tun 软链重建）
+│   ├── 30-zerotier.sh            ← 可选：开机拉起 ZeroTier（含 /dev/net/tun 软链 + 策略路由）
+│   ├── 40-opencode-web.sh        ← 可选：开机以 yuan 身份拉起 opencode serve:4300（0.0.0.0）
 │   ├── connect-wifi.sh           ← 无屏给 Android 6 写 WiFi（接参数，不写死凭据）
 │   └── chroot.sh                 ← 手动进 Debian chroot 的入口
 ├── evidence/                     ← 实机采集的原始输出（只读）
@@ -128,7 +129,8 @@ oppo-r9sk-root/
 │   ├── 2026-11-24-chroot-server.txt
 │   ├── 2026-11-24-chroot-wifi-inet.txt
 │   ├── 2026-11-24-user-rename.txt
-│   └── 2026-11-24-zerotier-opencode.txt
+│   ├── 2026-11-24-zerotier-opencode.txt
+│   └── 2026-11-24-opencode-web-zt.txt
 ├── tools/
 │   └── axml_dump.py              ← 二进制 AndroidManifest/XML 解码器
 └── work/                         ← 中间产物（不入库，见 .gitignore）
@@ -159,12 +161,17 @@ oppo-r9sk-root/
   重启 **26.6 s** 可从局域网直连（`192.168.2.205:2222`），无线 adb `5555` 兜底。
   Wi-Fi 已连（`yuan_5G`，5 GHz）；nginx 以非 root 跑在 `:8080` 已验证（PC 访问 200 / 27 ms）。
   详见 `docs/14-chroot-server.md`（含 11 个坑，其中「`socket(AF_INET): Permission denied` = 缺 `aid_inet` 组」最隐蔽）。
-- **ZeroTier（已完成，2026-11-24）**：`zerotier-one 1.16.2` arm64 装进 chroot，`join 8bd5124fd6ff23d9`，
-  节点地址 **`23697636b0`**；`/dev/net/tun → /dev/tun` 每次开机由 `30-zerotier.sh` 重建。
-  ⚠️ 还需在 ZeroTier Central 给 `23697636b0` 勾选授权（之前是 `ACCESS_DENIED`）。
+- **ZeroTier（已完成并授权，2026-11-24）**：`zerotier-one 1.16.2` arm64 装进 chroot，`join 8bd5124fd6ff23d9`，
+  节点地址 **`23697636b0`**，托管 IP **`192.168.193.5/24`**，与 PC 直连（DIRECT / 14 ms）；
+  `/dev/net/tun → /dev/tun` 每次开机由 `30-zerotier.sh` 重建。
+  ⚠️ **必须补 `ip rule to 192.168.193.0/24 lookup main`**：netd 只给进程查 per-network 表，
+  不补这条规则时 ZT 显示 ONLINE 却谁也通不了（脚本已自动加 + 后台守护）。
 - **OpenCode 2（已完成，2026-11-24）**：`v2.2.5` arm64 单文件二进制在 `/usr/local/bin/opencode`，
-  插件与本机一致（本地 `yzopencode` + npm `oh-my-openagent-v2@0.4.2`），
-  `opencode run` 实测 23 s 返回；**凭据未复制**（需在手机上 `opencode auth login`）。见 `docs/15`。
+  插件与本机一致（本地 `yzopencode` + npm `oh-my-openagent-v2@0.4.2`）；
+  **web 服务**由 `40-opencode-web.sh` 开机以 uid 2000 拉起在 `0.0.0.0:4300`，
+  口令与 PC 同一份 `service.json`（Basic，用户名 `opencode`，文件不入库），
+  局域网 `http://192.168.2.205:4300` 与 ZeroTier `http://192.168.193.5:4300` 均实测 200；
+  `opencode run` 实测 23 s 返回。见 `docs/15`。
 - 去预装 / 改 hosts / 模块：Magisk 模块系统实测可用（`magisk --install-module`）。
 - 银行类 App 隐藏 root：MagiskHide 已启用，按需在 App 里勾选目标。
 - ⚠️ **不要**在 Magisk App 里点「安装」升级到 24+：会失去 MagiskHide 且需要重新打补丁；23.0 是最后一代自带 Hide 的版本。
