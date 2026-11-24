@@ -1,6 +1,6 @@
 #!/system/bin/sh
 # 进 Debian chroot 的交互入口（在 PC 上执行：adb shell su -c 'sh /data/local/tmp/chroot.sh'）
-# 或先 ssh 进去后：ssh -t svc@<ip> -p 2222 直接用，不需要这个脚本
+# 或先 ssh 进去后：ssh -t yuan@<ip> -p 2222 直接用，不需要这个脚本
 R=/data/debian
 BB=/data/adb/magisk/busybox
 

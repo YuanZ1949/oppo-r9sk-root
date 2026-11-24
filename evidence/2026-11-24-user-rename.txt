@@ -1,0 +1,61 @@
+# 2026-11-24 · chroot 用户 renaming: svc -> yuan + authorized_keys（本机 + NAS）
+# 设备：OPPO R9sk · Debian 12.15 arm64 chroot · uid/gid 保持 2000
+# 脱敏：公钥指纹保留（非机密）；不记录任何私钥
+
+## 1. 改名前
+
+$ grep -E '^svc:' /data/debian/etc/{passwd,group,shadow,gshadow}
+passwd:svc:x:2000:2000::/home/svc:/bin/bash
+group:svc:x:2000:
+shadow:svc:*:20781:0:99999:7:::
+gshadow:svc:!::
+
+$ grep AllowUsers /data/debian/etc/ssh/sshd_config.d/10-r9sk.conf
+AllowUsers svc
+
+$ cat /data/debian/home/svc/.ssh/authorized_keys
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK9R0LJz... yuanjinhao3@qq.com   # 仅本机
+
+## 2. 改名后
+
+$ grep -E '^yuan:' /data/debian/etc/{passwd,group,shadow,gshadow}
+passwd:yuan:x:2000:2000::/home/yuan:/bin/bash
+group:yuan:x:2000:
+shadow:yuan:*:20781:0:99999:7:::
+gshadow:yuan:!:
+
+$ grep -E '^(sdcard_rw|media_rw|aid_inet|aid_net_raw):' /data/debian/etc/group
+sdcard_rw:x:1015:yuan
+media_rw:x:1023:yuan
+aid_inet:x:3003:yuan,_apt
+aid_net_raw:x:3004:yuan
+
+$ grep AllowUsers .../10-r9sk.conf
+AllowUsers yuan
+
+$ ls -l /data/debian/home/yuan/.ssh
+-rw------- 1 shell shell 775 authorized_keys      # Android 侧 uid 2000 显示为 shell
+
+## 3. authorized_keys 内容（3 把，只列注释与类型）
+
+ssh-ed25519   yuanjinhao3@qq.com                      # 本机 PC（~/.ssh/id_ed25519.pub）
+ssh-ed25519   yuan@linux->woodyuan-13700k             # NAS  ~/.ssh/id_ed25519.pub
+ssh-rsa       yuan@yuanNAS                            # NAS  ~/.ssh/nas_id_rsa.pub
+
+## 4. 验证
+
+# 本机 → 手机
+$ ssh -p 2222 yuan@192.168.2.205 'id'
+uid=2000(yuan) gid=2000(yuan) groups=2000(yuan),1015(sdcard_rw),1023(media_rw),
+  3003(aid_inet),3004(aid_net_raw)
+$ ssh -p 2222 yuan@192.168.2.205 'echo $HOME'
+/home/yuan
+
+# NAS(192.168.2.200) → 手机（用 NAS 自己的 id_ed25519，无需任何密码/口令）
+$ ssh yuannas.local "ssh -p 2222 yuan@192.168.2.205 'id -un; getent hosts deb.debian.org | head -1'"
+yuan
+2a04:4e42:8c::644  debian.map.fastlydns.net deb.debian.org
+
+# nginx / sshd 未受影响（uid 不变）
+$ ps -eo uid,comm | grep nginx   → 2000 nginx (master + workers)
+$ netstat -tln | grep 2222       → 0.0.0.0:2222 LISTEN

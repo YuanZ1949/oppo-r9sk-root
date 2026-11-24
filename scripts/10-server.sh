@@ -61,10 +61,10 @@ ensure_member() { # $1=组名 $2=gid $3=用户
     { print }' "$G" > "$G.new" && mv "$G.new" "$G"
   chmod 644 "$G"; chown 0:0 "$G"
 }
-ensure_member aid_inet     3003 svc
-ensure_member aid_net_raw  3004 svc
-ensure_member sdcard_rw    1015 svc
-ensure_member media_rw     1023 svc
+ensure_member aid_inet     3003 yuan
+ensure_member aid_net_raw  3004 yuan
+ensure_member sdcard_rw    1015 yuan
+ensure_member media_rw     1023 yuan
 ensure_member aid_inet     3003 _apt   # apt 的沙箱用户也要能联网
 
 # ---------- DNS ----------

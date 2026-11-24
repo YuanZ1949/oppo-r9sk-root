@@ -35,16 +35,21 @@ Termux 变成「可选」：想要屏幕终端或 `termux-api` 再装，不影�
 | 根文件系统 | **Debian GNU/Linux 12 (bookworm)**，`aarch64`，`/etc/debian_version` = `12.15` |
 | 体积 | 解压后 **466 MB**（`/data` 共 53 GB 空闲） |
 | sshd | **OpenSSH 9.2p1-2+deb12u10**，监听 `0.0.0.0:2222` |
-| 登录用户 | `svc`，`uid=2000(svc)`，补充组 `1015(sdcard_rw)`、`1023(media_rw)`、**`3003(aid_inet)`**、`3004(aid_net_raw)` |
-| 认证 | **仅公钥**（`PasswordAuthentication no`、`PermitRootLogin no`），`AllowUsers svc` |
+| 登录用户 | `yuan`，`uid=2000(yuan)`，补充组 `1015(sdcard_rw)`、`1023(media_rw)`、**`3003(aid_inet)`**、`3004(aid_net_raw)` |
+| 认证 | **仅公钥**（`PasswordAuthentication no`、`PermitRootLogin no`），`AllowUsers yuan`；`authorized_keys` 3 把（本机 `id_ed25519` + NAS `id_ed25519`/`nas_id_rsa`） |
 | 开机自启 | `/data/adb/service.d/10-server.sh`（sshd）+ `20-nginx.sh`（可选，nginx），Magisk `late_start` 阶段 |
 | 重启到 SSH 可用（局域网） | **26.6 s**（`boot_completed` 25.7 s；此前 adb 直连口径 16.5 s） |
 | 局域网地址 | `192.168.2.205:2222`（Wi-Fi `yuan_5G`，5 GHz，RSSI -29，433 Mbps） |
-| 示例服务 | nginx 1.22.1 以 `svc` 跑在 `:8080`，PC 访问 **200 / 27 ms** |
+| 示例服务 | nginx 1.22.1 以 `yuan` 跑在 `:8080`，PC 访问 **200 / 27 ms** |
 | 无线 adb 兜底 | `persist.adb.tcp.port=5555`，adbd 监听 `0.0.0.0:5555` |
-| 共享存储 | `/data/media/0` bind 到 chroot 的 `/sdcard`，`svc` 可读写（实测 `SDCARD_WRITE_OK`） |
+| 共享存储 | `/data/media/0` bind 到 chroot 的 `/sdcard`，`yuan` 可读写（实测 `SDCARD_WRITE_OK`） |
 | 内存占用 | 整机 `used 1209 MB`，`available 2386 MB`（chroot 本身几乎不额外占内存） |
 | CPU 可见核数 | chroot 内 `nproc` = **4**（Android 侧把 8 核中 4 核 offline 了） |
+
+> **用户改名（2026-11-24）**：原 `svc` 已改名为 **`yuan`**，`uid/gid` 仍是 **2000**（避开 Android 的 `1000=system`）。
+> 改的是 `/etc/passwd`、`/etc/shadow`、`/etc/group`、`/etc/gshadow`、家目录 `/home/yuan`、
+> `sshd_config.d/10-r9sk.conf` 的 `AllowUsers`；组 1015/1023/3003/3004 的成员也同步改。
+> **只改名字不动 uid**，所以 `/sdcard`、nginx 的属主（2000）都不需要动。
 
 ---
 
@@ -96,7 +101,7 @@ printf 'nameserver 223.5.5.5\n' > /data/debian/etc/resolv.conf
 
 当时归因成“netd 按 UID 拦 DNS”，**后来证伪**：真正原因是 UID 缺少 `aid_inet` 组，
 连 `socket(AF_INET)` 都会 `EACCES`（详见坑 11）。root 在组豁免范围内，所以看起来“网络是好的”。
-把 `svc` / `_apt` 加进 `aid_inet(3003)` 后，`svc` 自己就能解析域名，apt 的 `Sandbox::User "root"` 也就不再是必需品。
+把 `yuan` / `_apt` 加进 `aid_inet(3003)` 后，`yuan` 自己就能解析域名，apt 的 `Sandbox::User "root"` 也就不再是必需品。
 
 ```sh
 # /etc/apt/apt.conf.d/99-r9sk
@@ -126,12 +131,12 @@ Debian 自带 `sshd_config` 末尾已有 `Subsystem sftp /usr/lib/openssh/sftp-s
 
 ### 坑 5 · `Permission denied (publickey)`，但 `authorized_keys` 内容对
 
-`/home/svc/.ssh` 目录是 root 建的（700 root:root），`svc` 读不到自己的 `authorized_keys`。
+`/home/yuan/.ssh` 目录是 root 建的（700 root:root），`yuan` 读不到自己的 `authorized_keys`。
 `StrictModes yes` 下 sshd 直接拒绝。
 
 ```sh
-chown -R 2000:2000 /data/debian/home/svc
-chmod 700 /home/svc/.ssh && chmod 600 /home/svc/.ssh/authorized_keys
+chown -R 2000:2000 /data/debian/home/yuan
+chmod 700 /home/yuan/.ssh && chmod 600 /home/yuan/.ssh/authorized_keys
 ```
 
 ### 坑 6 · service.d 里 `chroot: not found` / `date: not found`
@@ -173,20 +178,20 @@ setprop persist.adb.tcp.port 5555
 
 ### 坑 10 · `/sdcard` 能挂上但 `Permission denied`
 
-`/data/media/0` 属主 `media_rw:media_rw`（uid/gid **1023**），mode `770`；`svc` 是 2000，不在组里。
+`/data/media/0` 属主 `media_rw:media_rw`（uid/gid **1023**），mode `770`；`yuan` 是 2000，不在组里。
 
 ```sh
 # /etc/group
-sdcard_rw:x:1015:svc
-media_rw:x:1023:svc
+sdcard_rw:x:1015:yuan
+media_rw:x:1023:yuan
 ```
 
-加完组后 `svc` 对 `/sdcard` 读写正常。
+加完组后 `yuan` 对 `/sdcard` 读写正常。
 
-> 顺带一个反面教材：改 `/etc/passwd` 时把补充组写进了 gecos 字段（`svc:x:2000:2000,1015,1023::`），
+> 顺带一个反面教材：改 `/etc/passwd` 时把补充组写进了 gecos 字段（`yuan:x:2000:2000,1015,1023::`），
 > 导致 `getpwnam` 解析失败、SSH 直接 `Permission denied (publickey)`。补充组只能写在 `/etc/group`。
 
-### 坑 11 · `svc` 完全没网（`socket(AF_INET): Permission denied`）—— 最隐蔽的一个
+### 坑 11 · `yuan` 完全没网（`socket(AF_INET): Permission denied`）—— 最隐蔽的一个
 
 现象很会骗人：
 
@@ -206,21 +211,21 @@ wget: socket(AF_INET,1,0): Permission denied     # EACCES，发生在 socket()�
 
 原因：这台机器的内核开了 **`CONFIG_ANDROID_PARANOID_NETWORK`** —— 只有 supplementary group
 含 **`aid_inet(3003)`** 的 UID 才允许创建 IPv4/IPv6 socket（`AID_NET_RAW=3004` 对应 raw socket）。
-`svc` 当时只有 1015/1023，于是**连 socket 都建不出来**；root 属于豁免，所以 root 一切正常。
+`yuan` 当时只有 1015/1023，于是**连 socket 都建不出来**；root 属于豁免，所以 root 一切正常。
 
 修复（写进 chroot 的 `/etc/group`，sshd 用 `initgroups()` 从那取组）：
 
 ```sh
 # /data/debian/etc/group
-aid_inet:x:3003:svc,_apt
-aid_net_raw:x:3004:svc
+aid_inet:x:3003:yuan,_apt
+aid_net_raw:x:3004:yuan
 ```
 
 验证（重启 sshd 后必须重新登录）：
 
 ```sh
-ssh -p 2222 svc@192.168.2.205 'id'   # 要出现 3003(aid_inet)
-ssh -p 2222 svc@192.168.2.205 'getent hosts deb.debian.org; curl -sS -o /dev/null -w "%{http_code}\n" https://deb.debian.org/debian/README'
+ssh -p 2222 yuan@192.168.2.205 'id'   # 要出现 3003(aid_inet)
+ssh -p 2222 yuan@192.168.2.205 'getent hosts deb.debian.org; curl -sS -o /dev/null -w "%{http_code}\n" https://deb.debian.org/debian/README'
 ```
 
 `scripts/10-server.sh` 里已加幂等的 `ensure_member`，每次开机自动补齐，避免重建 rootfs 后再踩。
@@ -282,7 +287,7 @@ svc wifi disable; sleep 2; svc wifi enable                                      
 ```
 
 实测结果（2026-11-24）：`yuan_5G`（**5 GHz**，`5200 MHz`，`433 Mbps`，RSSI -29）连上后
-`wlan0 = 192.168.2.205/24`，PC 端 `ssh -p 2222 svc@192.168.2.205` 直连成功（不再需要 `adb forward`）。
+`wlan0 = 192.168.2.205/24`，PC 端 `ssh -p 2222 yuan@192.168.2.205` 直连成功（不再需要 `adb forward`）。
 
 > 注意 `dumpsys wifi` 里两个不同的 SSID 状态：`Wi-Fi is enabled` 只表示**开关**开着，
 > 真正的连接状态看 `mNetworkInfo … state: CONNECTED` / `Supplicant state: COMPLETED`。
@@ -297,12 +302,12 @@ svc wifi disable; sleep 2; svc wifi enable                                      
 adb shell 'su -c "LD_PRELOAD= /system/bin/chroot /data/debian /usr/bin/env -i \
   PATH=/usr/sbin:/usr/bin:/sbin:/bin /usr/bin/apt-get install -y nginx-light"'
 
-# 非 root 不能绑 80 → 改成 8080；pid/日志目录给 svc
+# 非 root 不能绑 80 → 改成 8080；pid/日志目录给 yuan
 sed -i 's/listen 80 default_server;/listen 8080 default_server;/' /etc/nginx/sites-available/default
 sed -i 's#^pid /run/nginx.pid;#pid /run/nginx/nginx.pid;#' /etc/nginx/nginx.conf
 mkdir -p /run/nginx && chown 2000:2000 /run/nginx /var/log/nginx
 
-# 以 svc 起（sshd 会话里）
+# 以 yuan 起（sshd 会话里）
 nginx && nginx -t && nginx -s reload
 ```
 
@@ -324,7 +329,7 @@ adb shell 'su -c "cat /data/local/tmp/server.log"'
 adb shell 'su -c "sh /data/adb/service.d/10-server.sh"'
 
 # 从 PC 直连（Wi-Fi 就绪时）
-ssh -p 2222 svc@192.168.2.205
+ssh -p 2222 yuan@192.168.2.205
 
 # 进 chroot（PC 上）
 adb shell 'su -c "sh /data/local/tmp/chroot.sh"'
@@ -334,7 +339,7 @@ adb shell 'su -c "kill $(cat /data/debian/run/sshd.pid)"'
 adb shell 'su -c "LD_PRELOAD= /system/bin/chroot /data/debian /usr/bin/env -i \
   PATH=/usr/sbin:/usr/bin:/sbin:/bin /usr/sbin/sshd -p 2222 -o PidFile=/run/sshd.pid"'
 
-# nginx（以 svc 身份，在 ssh 会话里）
+# nginx（以 yuan 身份，在 ssh 会话里）
 nginx -t && nginx -s reload        # 改完配置热加载
 kill $(cat /run/nginx/nginx.pid)   # 停
 
@@ -344,7 +349,12 @@ adb shell 'su -c "LD_PRELOAD= /system/bin/chroot /data/debian /usr/bin/env -i \
 
 # 没 WiFi 时临时从 PC 连（本地 2222 被占用就换个端口）
 adb forward tcp:22222 tcp:2222
-ssh -p 22222 svc@127.0.0.1
+ssh -p 22222 yuan@127.0.0.1
+
+# 追加一把公钥（注意属主/权限，否则 sshd StrictModes 会拒绝）
+adb shell 'su -c "cat >> /data/debian/home/yuan/.ssh/authorized_keys"' < newkey.pub
+adb shell 'su -c "chown 2000:2000 /data/debian/home/yuan/.ssh/authorized_keys; \
+  chmod 600 /data/debian/home/yuan/.ssh/authorized_keys"'
 ```
 
 ---
@@ -354,8 +364,8 @@ ssh -p 22222 svc@127.0.0.1
 | 事实 | 含义 |
 | --- | --- |
 | chroot **不是**安全边界 | root 想逃逸随时能逃（`chroot` 只隔离依赖，不是沙箱） |
-| sshd 以 root 启动 | sshd 必须 root 才能切换用户；**会话本身是 `svc`（uid 2000）** |
-| 服务都跑 `svc` | 单个服务被 RCE，拿不到 root；要 root 只能从 Android 侧 `su` |
+| sshd 以 root 启动 | sshd 必须 root 才能切换用户；**会话本身是 `yuan`（uid 2000）** |
+| 服务都跑 `yuan` | 单个服务被 RCE，拿不到 root；要 root 只能从 Android 侧 `su` |
 | 不要暴露 22/2222 到公网 | Android 6 的 sshd + 公网 = 一天被扫穿。用 Tailscale（`/dev/tun` 实测 `TUN_OPEN_OK`）或 Cloudflare Tunnel |
 | 不要用 uid 1000 | Android 里 `1000=system`；chroot 与 Android 共用同一 uid 命名空间，选 **2000**（`shell`）最安全 |
 | 电池 | 长期 100% 插电会鼓包；建议智能插座定时上电，维持 40–70% |
@@ -364,7 +374,7 @@ ssh -p 22222 svc@127.0.0.1
 
 ## 8. 当前状态与下一步
 
-**已完成**：rootfs → chroot → apt（清华源）→ openssh → `svc` 用户 → 公钥登录 → service.d 开机自启 →
+**已完成**：rootfs → chroot → apt（清华源）→ openssh → `yuan` 用户 → 公钥登录 → service.d 开机自启 →
 无线 adb 兜底 → `/sdcard` 读写 → **Wi-Fi 接入（5 GHz，192.168.2.205）** → **`aid_inet` 网络组修复** →
 **nginx 以 uid 2000 跑在 8080** → 重启验证（重启后 SSH **26.6 s** 可用、DNS/HTTP 正常、nginx 自动拉起）。
 
@@ -374,4 +384,4 @@ ssh -p 22222 svc@127.0.0.1
    Home Assistant 能跑但吃紧（300–500 MB），Jellyfin 转码 / ES 不行。
 2. 远程接入：`/dev/tun` 可开 → Tailscale 官方 arm64 静态包可直接放进 chroot 跑（不要在路由器上把 2222 映射出去）。
 3. 内存上限（可选）：`/sys/fs/cgroup/memory/<group>/memory.limit_in_bytes` 实测可写，可给单服务兜底。
-4. 想绑 80/443：要么 `iptables -t nat` 从 80 转发到 8080，要么把 `net.ipv4.ip_unprivileged_port_start` 调低，不要为此给 `svc` sudo。
+4. 想绑 80/443：要么 `iptables -t nat` 从 80 转发到 8080，要么把 `net.ipv4.ip_unprivileged_port_start` 调低，不要为此给 `yuan` sudo。

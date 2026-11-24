@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# 可选 · 开机以 uid 2000（svc）启动 chroot 内的 nginx，监听 8080
+# 可选 · 开机以 uid 2000（yuan）启动 chroot 内的 nginx，监听 8080
 # 部署位置：/data/adb/service.d/20-nginx.sh ；不需要 nginx 就删掉本文件
 # 说明：以非 root 运行，因此不能绑 <1024 端口；要 80 端口请用 iptables 转发或改 nginx 端口
 
