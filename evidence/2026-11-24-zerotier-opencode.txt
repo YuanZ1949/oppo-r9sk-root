@@ -1,0 +1,114 @@
+# 2026-11-24 · ZeroTier 1.16.2 + OpenCode 2.2.5 装进 Debian chroot（arm64）
+# 设备：OPPO R9sk · Debian 12.15 arm64 · 内核 3.18.24 · uid 2000(yuan)
+# 脱敏：ZeroTier network ID 为用户自有内网 ID（非机密）；不记录任何 provider 凭据/私钥
+
+## 1. ZeroTier 安装（官方脚本，chroot 内 root）
+
+$ curl -sS https://install.zerotier.com | bash
+...
+Preparing to unpack .../zerotier-one_1.16.2_arm64.deb ...
+Setting up zerotier-one (1.16.2) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/zerotier-one.service ...
+Running in chroot, ignoring request.
+*** Package installed but cannot start service! You may be in a Docker container
+ii  zerotier-one   1.16.2   arm64   ZeroTier network virtualization service
+-rwxr-xr-x 1 root root 9856088 /usr/sbin/zerotier-one
+lrwxrwxrwx 1 root root      12 /usr/sbin/zerotier-cli -> zerotier-one
+
+## 2. TUN 设备
+
+$ ls -l /dev/tun
+crw-rw---- system vpn 10, 200 tun        # Android 侧只有 /dev/tun
+
+$ mkdir -p /dev/net; ln -s /dev/tun /dev/net/tun
+$ ls -l /dev/net/tun
+lrwxrwxrwx root root 8 tun -> /dev/tun
+
+## 3. 启动 + join
+
+$ zerotier-one -d            # 注意：必须重定向输出，否则 adb shell 会话被 daemon 挂住
+$ zerotier-cli info
+200 info 23697636b0 1.16.2 ONLINE
+$ zerotier-cli join 8bd5124fd6ff23d9
+200 join OK
+$ zerotier-cli listnetworks
+200 listnetworks 8bd5124fd6ff23d9  da:00:96:a0:79:a2  ACCESS_DENIED  PRIVATE  ztyqb623ap  -
+
+# 未授权前 tcp 9993 已在听：
+$ netstat -tln | grep 9993
+tcp 0 0 0.0.0.0:9993 0.0.0.0:* LISTEN
+tcp 0 0 :::9993 :::* LISTEN
+
+# 重启后（service.d 自启）
+$ zerotier-cli info
+200 info 23697636b0 1.16.2 OFFLINE
+$ zerotier-cli listnetworks
+200 listnetworks 8bd5124fd6ff23d9  da:00:96:a0:79:a2  REQUESTING_CONFIGURATION  PRIVATE  ztyqb623ap  -
+
+# 开机日志
+/usr/sbin/zerotier-one: WARNING: failed to drop privileges (kernel may not support
+  required prctl features), running as root
+[2026-11-24 11:04:21] zerotier: start rc=0
+Starting Control Plane...
+Starting V6 Control Plane...
+
+# 普通用户读 authtoken（预期失败）
+$ zerotier-cli info
+/usr/sbin/zerotier-cli: authtoken.secret not found or readable in /var/lib/zerotier-one (try again as root)
+
+## 4. OpenCode 2.2.5（arm64 单文件二进制）
+
+# 平台包：@opencode/cli-linux-arm64@2.2.5
+# tarball 117,223,869 B → bin/opencode 248,433,656 B
+$ tar -xzf oc.tgz; ls -l package/bin/opencode
+-rwxr-xr-x 1 yuan 197609 248433656 package/bin/opencode
+
+$ install -m 755 .../opencode /usr/local/bin/opencode
+$ opencode --version
+opencode v2.2.5
+
+## 5. 插件激活问题（已解决）
+
+# 只拷 index.js/tui.js（无 node_modules）时：
+$ opencode auth list
+Location plugins did not finish activating          # rc=1，约 13 s 放弃
+
+# 原因：index.js 依赖外部包
+$ head -5 index.js
+// @bun
+import { homedir as homedir6 } from "os";
+import { Plugin } from "@opencode/plugin/effect";
+import { Cause as Cause25, Effect as Effect46, Ref as Ref2 } from "effect";
+
+# 补 node_modules（PC 同版本，52.5 MB / 3667 files → 解压后 64 MB）：
+$ du -sh ~/.config/opencode
+64M
+
+# 之后 run 正常：
+$ opencode run --model opencode/deepseek-v4.1-flash-free "reply with exactly: CHROOT_OK"
+CHROOT_OK
+rc=0 elapsed=23s
+
+# 插件生效的旁证（yzopencode 会写这两个文件）：
+-rw-r--r-- 1 yuan yuan 4854 Nov 24 11:03 ~/.config/opencode/auto-quota-recover.log
+-rw------- 1 yuan yuan 8117 Nov 24 11:03 ~/.config/opencode/fetch-diag.log
+
+# MCP 连接（远程，无需凭据）
+mcp connected server=context7 tools=2
+mcp connected server=websearch tools=2
+
+## 6. 配置差异（相对 PC）
+
+shell:            pwsh  -> bash
+plugins[0]:       C:/Users/yuan/.config/opencode/plugins/yzopencode
+                  -> /home/yuan/.config/opencode/plugins/yzopencode
+mcp.codegraph:    disabled: true（无 arm64 二进制）
+provider.lm:      apiKey 已移除（凭据留空）
+未复制：          auth.json / service.json
+
+## 7. 重启验证
+
+SSH_READY_AT=27.7 s
+$ ls -l /dev/net/tun
+lrwxrwxrwx root root 8 /dev/net/tun -> /dev/tun
+# 9993 在听（由 30-zerotier.sh 拉起），网络等待 Central 授权

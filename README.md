@@ -105,10 +105,12 @@ oppo-r9sk-root/
 │   ├── 11-boot-hang-analysis.md  ← 卡 OPPO logo 的真实根因（SELinux 标签 → installd）
 │   ├── 12-magisk-success.md      ← Magisk 23.0 装法与启动验证
 │   ├── 13-magisk-app-and-coloros-install-gate.md ← App 安装 + 击穿 ColorOS 验证拦截
-│   └── 14-chroot-server.md       ← 把手机当服务器：Debian 12 chroot + sshd:2222 + WiFi + 开机自启
+│   ├── 14-chroot-server.md       ← 把手机当服务器：Debian 12 chroot + sshd:2222 + WiFi + 开机自启
+│   └── 15-zerotier-opencode.md   ← ZeroTier 远程接入 + OpenCode 2.2.5（arm64）装进 chroot
 ├── scripts/                      ← 部署到设备上的脚本（可直接复用）
 │   ├── 10-server.sh              ← /data/adb/service.d 开机自启（挂载 + 网络组 + sshd + 无线 adb 兜底）
 │   ├── 20-nginx.sh               ← 可选：开机以 yuan 身份拉起 nginx:8080
+│   ├── 30-zerotier.sh            ← 可选：开机拉起 ZeroTier（含 /dev/net/tun 软链重建）
 │   ├── connect-wifi.sh           ← 无屏给 Android 6 写 WiFi（接参数，不写死凭据）
 │   └── chroot.sh                 ← 手动进 Debian chroot 的入口
 ├── evidence/                     ← 实机采集的原始输出（只读）
@@ -125,7 +127,8 @@ oppo-r9sk-root/
 │   ├── 2026-11-21-kingroot-block.txt
 │   ├── 2026-11-24-chroot-server.txt
 │   ├── 2026-11-24-chroot-wifi-inet.txt
-│   └── 2026-11-24-user-rename.txt
+│   ├── 2026-11-24-user-rename.txt
+│   └── 2026-11-24-zerotier-opencode.txt
 ├── tools/
 │   └── axml_dump.py              ← 二进制 AndroidManifest/XML 解码器
 └── work/                         ← 中间产物（不入库，见 .gitignore）
@@ -156,7 +159,12 @@ oppo-r9sk-root/
   重启 **26.6 s** 可从局域网直连（`192.168.2.205:2222`），无线 adb `5555` 兜底。
   Wi-Fi 已连（`yuan_5G`，5 GHz）；nginx 以非 root 跑在 `:8080` 已验证（PC 访问 200 / 27 ms）。
   详见 `docs/14-chroot-server.md`（含 11 个坑，其中「`socket(AF_INET): Permission denied` = 缺 `aid_inet` 组」最隐蔽）。
-- ZeroTier / Tailscale：现在有 root，`/dev/tun`（`system:vpn`）实测 `TUN_OPEN_OK`，可在 chroot 内跑官方 arm64 包。
+- **ZeroTier（已完成，2026-11-24）**：`zerotier-one 1.16.2` arm64 装进 chroot，`join 8bd5124fd6ff23d9`，
+  节点地址 **`23697636b0`**；`/dev/net/tun → /dev/tun` 每次开机由 `30-zerotier.sh` 重建。
+  ⚠️ 还需在 ZeroTier Central 给 `23697636b0` 勾选授权（之前是 `ACCESS_DENIED`）。
+- **OpenCode 2（已完成，2026-11-24）**：`v2.2.5` arm64 单文件二进制在 `/usr/local/bin/opencode`，
+  插件与本机一致（本地 `yzopencode` + npm `oh-my-openagent-v2@0.4.2`），
+  `opencode run` 实测 23 s 返回；**凭据未复制**（需在手机上 `opencode auth login`）。见 `docs/15`。
 - 去预装 / 改 hosts / 模块：Magisk 模块系统实测可用（`magisk --install-module`）。
 - 银行类 App 隐藏 root：MagiskHide 已启用，按需在 App 里勾选目标。
 - ⚠️ **不要**在 Magisk App 里点「安装」升级到 24+：会失去 MagiskHide 且需要重新打补丁；23.0 是最后一代自带 Hide 的版本。
