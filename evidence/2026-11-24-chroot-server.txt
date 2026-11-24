@@ -1,0 +1,75 @@
+# 2026-11-24 Debian chroot 服务器落地实测
+
+## 1. 宿主基础
+Linux localhost 3.18.24-perf-g1ec9dfb-01518-g7eeba31 #1 SMP PREEMPT Wed Nov 27 15:58:54 CST 2019 aarch64
+
+MemTotal:        3681580 kB
+
+6.0.1
+
+Enforcing
+
+
+## 2. chroot 内系统
+PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+
+NAME="Debian GNU/Linux"
+
+VERSION_ID="12"
+
+aarch64
+
+12.15
+
+4
+
+               total        used        free      shared  buff/cache   available
+
+Mem:            3595        1209        1307           6        1167        2386
+
+
+## 3. openssh 版本
+OpenSSH_9.2, OpenSSL 3.0.22 25 Aug 2026
+
+ii  openssh-server 1:9.2p1-2+deb12u10 arm64        secure shell (SSH) server, for secure access from remote machines
+
+
+## 4. 监听端口
+tcp        0      0 0.0.0.0:2222            0.0.0.0:*               LISTEN      
+
+tcp        0      0 0.0.0.0:5555            0.0.0.0:*               LISTEN      
+
+
+## 5. service.d 开机日志（重启后）
+[2026-11-24 09:12:19] === boot: start ===
+
+[2026-11-24 09:12:19] wireless adb: persist.adb.tcp.port=5555
+
+[2026-11-24 09:12:19] sshd start rc=0
+
+[2026-11-24 09:12:19] === boot: done ===
+
+[2026-11-24 09:12:36] === boot: start ===
+
+[2026-11-24 09:12:36] wireless adb: persist.adb.tcp.port=5555
+
+[2026-11-24 09:12:37] sshd start rc=0
+
+[2026-11-24 09:12:37] === boot: done ===
+
+
+## 6. chroot 内挂载
+uid=2000(svc) gid=2000(svc) groups=2000(svc),1015(sdcard_rw),1023(media_rw)
+---
+tmpfs on /dev type tmpfs (rw,nosuid,relatime,seclabel,size=1830552k,nr_inodes=457638,mode=755)
+proc on /proc type proc (rw,relatime)
+sysfs on /sys type sysfs (rw,relatime,seclabel)
+/dev/block/dm-0 on /sdcard type ext4 (rw,nosuid,nodev,relatime,seclabel,discard,noauto_da_alloc,errors=panic,data=ordered)
+---
+/dev/block/dm-0   54G  1.1G   53G   3% /sdcard
+/dev/block/dm-0   54G  1.1G   53G   3% /sdcard
+
+## 7. 权限验证
+SDCARD_WRITE_OK
+sudo: effective uid is not 0, is /usr/bin/sudo on a file system with the 'nosuid' option set or an NFS file system without root privileges?
+no-sudo-expected

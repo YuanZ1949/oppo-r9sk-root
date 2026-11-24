@@ -104,7 +104,11 @@ oppo-r9sk-root/
 │   ├── 10-system-root.md         ← /system 模式 root（rootd，已弃用，仅存档）
 │   ├── 11-boot-hang-analysis.md  ← 卡 OPPO logo 的真实根因（SELinux 标签 → installd）
 │   ├── 12-magisk-success.md      ← Magisk 23.0 装法与启动验证
-│   └── 13-magisk-app-and-coloros-install-gate.md ← App 安装 + 击穿 ColorOS 验证拦截
+│   ├── 13-magisk-app-and-coloros-install-gate.md ← App 安装 + 击穿 ColorOS 验证拦截
+│   └── 14-chroot-server.md       ← 把手机当服务器：Debian 12 chroot + sshd:2222 + 开机自启
+├── scripts/                      ← 部署到设备上的脚本（可直接复用）
+│   ├── 10-server.sh              ← /data/adb/service.d 开机自启（挂载 + sshd + 无线 adb 兜底）
+│   └── chroot.sh                 ← 手动进 Debian chroot 的入口
 ├── evidence/                     ← 实机采集的原始输出（只读）
 │   ├── 2026-11-21-device-props.txt
 │   ├── 2026-11-21-engineermode-surface.txt
@@ -116,7 +120,8 @@ oppo-r9sk-root/
 │   ├── 2026-11-21-termux-inventory.txt
 │   ├── 2026-11-21-termux-privileges.txt
 │   ├── 2026-11-21-cve-lab.txt
-│   └── 2026-11-21-kingroot-block.txt
+│   ├── 2026-11-21-kingroot-block.txt
+│   └── 2026-11-24-chroot-server.txt
 ├── tools/
 │   └── axml_dump.py              ← 二进制 AndroidManifest/XML 解码器
 └── work/                         ← 中间产物（不入库，见 .gitignore）
@@ -142,7 +147,11 @@ oppo-r9sk-root/
 
 **后续可做（都已有前提条件）：**
 
-- ZeroTier / OpenVPN：现在有 root，`/dev/tun`（`system:vpn`）可通过 `chown`/SELinux 策略处理。
+- **当服务器用（已完成，2026-11-24）**：Debian 12 arm64 chroot 在 `/data/debian`，`sshd:2222` 仅公钥登录、
+  会话降权到 `svc`(uid 2000)，`/data/adb/service.d` 开机自启，重启 **16.5 s** 可连，
+  无线 adb `5555` 兜底。详见 `docs/14-chroot-server.md`。
+  当前唯一缺口：解锁时 `/data` 被清空，手机**没有保存的 WiFi**，只有蜂窝（CGNAT），需手动连一次家里 AP。
+- ZeroTier / Tailscale：现在有 root，`/dev/tun`（`system:vpn`）实测 `TUN_OPEN_OK`，可在 chroot 内跑官方 arm64 包。
 - 去预装 / 改 hosts / 模块：Magisk 模块系统实测可用（`magisk --install-module`）。
 - 银行类 App 隐藏 root：MagiskHide 已启用，按需在 App 里勾选目标。
 - ⚠️ **不要**在 Magisk App 里点「安装」升级到 24+：会失去 MagiskHide 且需要重新打补丁；23.0 是最后一代自带 Hide 的版本。
