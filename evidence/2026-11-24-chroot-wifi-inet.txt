@@ -1,0 +1,129 @@
+# 2026-11-24 · WiFi 接入 + aid_inet 修复 + nginx 实测
+# 设备：OPPO R9sk（序列号已脱敏）· Magisk 23.0 · Debian 12.15 arm64 chroot
+# 脱敏：Wi-Fi psk 不记录；序列号/IMEI 不记录
+
+## 1. WiFi 状态（连上后）
+
+$ dumpsys wifi | grep -E "mWifiInfo SSID|Wi-Fi is"
+Wi-Fi is enabled
+mWifiInfo SSID: yuan_5G, BSSID: 5c:02:14:f4:7e:**, MAC: 4c:1a:3d:39:89:b9,
+  Supplicant state: COMPLETED, RSSI: -29, Link speed: 433Mbps, Frequency: 5200MHz,
+  Net ID: 0, Metered hint: false, score: 0
+mNetworkInfo [type: WIFI[], state: CONNECTED/CONNECTED, reason: (unspecified),
+  extra: "yuan_5G", roaming: false, failover: false, isAvailable: true]
+
+$ ip -4 addr show wlan0
+22: wlan0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1460 qdisc mq state UP qlen 1000
+    inet 192.168.2.205/24 brd 192.168.2.255 scope global wlan0
+
+## 2. 症状：svc 无网络（root 正常）
+
+# root 在 chroot 内
+$ chroot /data/debian /usr/bin/getent hosts deb.debian.org
+2a04:4e42:68::644  debian.map.fastlydns.net deb.debian.org      # rc=0
+
+# uid 2000 在 chroot 内
+$ chroot /data/debian /usr/bin/setpriv --reuid=2000 --regid=2000 --clear-groups \
+    /usr/bin/getent hosts deb.debian.org
+                                                                # rc=2（解析失败）
+
+$ ... /usr/bin/curl -m 8 http://146.75.114.132/debian/README
+curl: (7) Failed to connect to 146.75.114.132 port 80 after 0 ms: Couldn't connect to server
+
+$ ... /tmp/busybox wget -O- http://146.75.114.132/debian/README
+wget: socket(AF_INET,1,0): Permission denied        <-- 真因：socket() 就 EACCES
+
+## 3. 排除项（都不是根因）
+
+$ ip rule show
+0:      from all lookup local
+10000:  from all fwmark 0xc0000/0xd0000 lookup legacy_system
+10500:  from all oif wlan0 uidrange 0-0 lookup wlan0
+13000:  from all fwmark 0x10068/0x1ffff lookup wlan0
+14000:  from all oif wlan0 lookup wlan0
+19000:  from all fwmark 0x68/0x1ffff lookup wlan0
+22000:  from all fwmark 0x0/0xffff lookup wlan0
+23000:  from all fwmark 0x0/0xffff uidrange 0-0 lookup main
+32000:  from all unreachable
+
+$ ip route show table wlan0
+default via 192.168.2.1 dev wlan0  proto static
+192.168.2.0/24 dev wlan0  proto static  scope link
+
+$ iptables-save | grep "dport 53"     # 空
+$ iptables -t filter -S fw_OUTPUT | grep -E "owner|REJECT|DROP"   # 空
+
+结论：路由表有 default、无 DNS 防火墙规则 → 失败发生在 socket()，与路由/DNS 配置无关。
+
+## 4. 修复：补 aid_inet(3003) / aid_net_raw(3004) 组
+
+# /data/debian/etc/group（sshd 用 initgroups() 读这里）
+sdcard_rw:x:1015:svc
+media_rw:x:1023:svc
+aid_inet:x:3003:svc,_apt
+aid_net_raw:x:3004:svc
+
+# 重启 sshd 后重新登录
+$ ssh -p 2222 svc@192.168.2.205 id
+uid=2000(svc) gid=2000(svc) groups=2000(svc),1015(sdcard_rw),1023(media_rw),
+  3003(aid_inet),3004(aid_net_raw)
+
+$ ssh ... 'getent hosts deb.debian.org'
+2a04:4e42:8c::644  debian.map.fastlydns.net deb.debian.org
+
+$ ssh ... 'curl -o /dev/null -w "%{http_code} %{time_total}\n" http://deb.debian.org/debian/README'
+200 0.996047s
+$ ssh ... 'curl -o /dev/null -w "%{http_code}\n" https://deb.debian.org/debian/README'
+200
+
+## 5. apt（需要 root，svc 无 sudo：/data 为 nosuid）
+
+$ adb shell 'su -c "LD_PRELOAD= /system/bin/chroot /data/debian /usr/bin/env -i \
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/root \
+    /bin/sh -c \"apt-get update -qq; echo UPDATE_RC=\$?; apt-get install -y -qq nginx-light\""'
+UPDATE_RC=0
+Setting up nginx-light (1.22.1-9+deb12u11) ...
+Processing triggers for nginx (1.22.1-9+deb12u11) ...
+Running in chroot, ignoring request.
+
+# 从 svc 直接 apt → 预期失败（无 sudo）
+$ ssh ... 'apt-get update'
+E: Could not open lock file /var/lib/apt/lists/lock - open (13: Permission denied)
+
+## 6. nginx 以 uid 2000 跑 8080
+
+$ ssh ... 'ps -eo uid,pid,comm | grep nginx'
+ 2000  9738 nginx
+ 2000  9739 nginx
+ 2000  9740 nginx
+
+$ ssh ... 'nginx -t'
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+（warn: "user" directive ... ignored —— 非 root 启动的预期警告）
+
+$ ssh ... 'nginx -s reload'
+nginx: [notice] signal process started
+
+# PC 端直连（局域网）
+$ curl -sS -o NUL -w "%{http_code} %{time_total}s" http://192.168.2.205:8080/
+200 0.027410s
+
+## 7. 重启验证（adb reboot 起算）
+
+SSH_READY_AT=26.6 s（boot_completed=25.7 s）
+
+$ ssh ... 'id; getent hosts deb.debian.org; cat /proc/uptime'
+uid=2000(svc) gid=2000(svc) groups=2000(svc),1015(sdcard_rw),1023(media_rw),
+  3003(aid_inet),3004(aid_net_raw)
+2a04:4e42:68::644  debian.map.fastlydns.net deb.debian.org
+31.12 132.02
+
+$ curl -o NUL -w "%{http_code}" http://192.168.2.205:8080/    → 200
+
+$ adb shell 'su -c "tail -8 /data/local/tmp/server.log"'
+[2026-11-24 09:35:45] === boot: start ===
+[2026-11-24 09:35:45] wireless adb: persist.adb.tcp.port=5555
+[2026-11-24 09:35:46] sshd start rc=0
+[2026-11-24 09:35:46] === boot: done ===
+2026/11/24 09:35:46 [warn] user directive ignored in /etc/nginx/nginx.conf:1
+[2026-11-24 09:35:46] nginx: start rc=0

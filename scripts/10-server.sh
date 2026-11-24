@@ -47,6 +47,26 @@ if [ -d /data/media/0 ]; then
   $BB mountpoint -q "$R/sdcard" || $BB mount -o bind /data/media/0 "$R/sdcard" || log "WARN: bind sdcard failed"
 fi
 
+# ---------- 网络组（关键坑）----------
+# 这台机器的内核开了 CONFIG_ANDROID_PARANOID_NETWORK：只有 supplementary group
+# 里含 aid_inet(3003) 的 UID 才能 socket(AF_INET)，否则连 socket() 都返回
+# EACCES（表现为 curl "Failed to connect after 0 ms"、getent 解析失败、ping
+# 却因为 setuid 差异表现不一致，极易误判成 DNS/路由问题）。
+# sshd 用 initgroups() 从 chroot 的 /etc/group 取组，所以要写在那里。
+ensure_member() { # $1=组名 $2=gid $3=用户
+  G="$R/etc/group"
+  grep -q "^$1:" "$G" || echo "$1:x:$2:" >> "$G"
+  $BB awk -F: -v OFS=: -v g="$1" -v u="$3" '
+    $1 == g { if ($4 == "") $4 = u; else if (index("," $4 ",", "," u ",") == 0) $4 = $4 "," u }
+    { print }' "$G" > "$G.new" && mv "$G.new" "$G"
+  chmod 644 "$G"; chown 0:0 "$G"
+}
+ensure_member aid_inet     3003 svc
+ensure_member aid_net_raw  3004 svc
+ensure_member sdcard_rw    1015 svc
+ensure_member media_rw     1023 svc
+ensure_member aid_inet     3003 _apt   # apt 的沙箱用户也要能联网
+
 # ---------- DNS ----------
 # 蜂窝/无线切换后运营商 DNS 会变；这里取 Android 当前的 dns1
 D1=$(getprop net.dns1)

@@ -1,7 +1,8 @@
 # 14 · 把手机当服务器：Debian chroot + sshd + 开机自启
 
-> 采集：`evidence/2026-11-24-chroot-server.txt`
-> 脚本：`scripts/10-server.sh`（开机自启）、`scripts/chroot.sh`（手动进入）
+> 采集：`evidence/2026-11-24-chroot-server.txt`、`evidence/2026-11-24-chroot-wifi-inet.txt`
+> 脚本：`scripts/10-server.sh`（sshd 开机自启）、`scripts/20-nginx.sh`（可选 nginx 自启）、
+> `scripts/chroot.sh`（手动进入）、`scripts/connect-wifi.sh`（root 写 Wi-Fi 配置）
 > 时间：2026-11-24 · 全部结论为实机实测
 
 ---
@@ -34,10 +35,12 @@ Termux 变成「可选」：想要屏幕终端或 `termux-api` 再装，不影�
 | 根文件系统 | **Debian GNU/Linux 12 (bookworm)**，`aarch64`，`/etc/debian_version` = `12.15` |
 | 体积 | 解压后 **466 MB**（`/data` 共 53 GB 空闲） |
 | sshd | **OpenSSH 9.2p1-2+deb12u10**，监听 `0.0.0.0:2222` |
-| 登录用户 | `svc`，`uid=2000(svc)`，补充组 `1015(sdcard_rw)`、`1023(media_rw)` |
+| 登录用户 | `svc`，`uid=2000(svc)`，补充组 `1015(sdcard_rw)`、`1023(media_rw)`、**`3003(aid_inet)`**、`3004(aid_net_raw)` |
 | 认证 | **仅公钥**（`PasswordAuthentication no`、`PermitRootLogin no`），`AllowUsers svc` |
-| 开机自启 | `/data/adb/service.d/10-server.sh`，Magisk `late_start` 阶段 |
-| 重启到 sshd 可用 | **16.5 s**（`adb` 上线 16.4 s，`boot_completed` 约 28 s —— sshd 比系统起完还早） |
+| 开机自启 | `/data/adb/service.d/10-server.sh`（sshd）+ `20-nginx.sh`（可选，nginx），Magisk `late_start` 阶段 |
+| 重启到 SSH 可用（局域网） | **26.6 s**（`boot_completed` 25.7 s；此前 adb 直连口径 16.5 s） |
+| 局域网地址 | `192.168.2.205:2222`（Wi-Fi `yuan_5G`，5 GHz，RSSI -29，433 Mbps） |
+| 示例服务 | nginx 1.22.1 以 `svc` 跑在 `:8080`，PC 访问 **200 / 27 ms** |
 | 无线 adb 兜底 | `persist.adb.tcp.port=5555`，adbd 监听 `0.0.0.0:5555` |
 | 共享存储 | `/data/media/0` bind 到 chroot 的 `/sdcard`，`svc` 可读写（实测 `SDCARD_WRITE_OK`） |
 | 内存占用 | 整机 `used 1209 MB`，`available 2386 MB`（chroot 本身几乎不额外占内存） |
@@ -77,7 +80,7 @@ adb shell 'su -c "mkdir -p /data/debian && cd /data/debian && \
 
 ---
 
-## 4. 十个坑（按踩到的顺序）
+## 4. 十一个坑（按踩到的顺序）
 
 ### 坑 1 · `resolv.conf` 写不进去：`No such file or directory`
 
@@ -89,10 +92,11 @@ rm -f /data/debian/etc/resolv.conf      # 先删链接，再写实体文件
 printf 'nameserver 223.5.5.5\n' > /data/debian/etc/resolv.conf
 ```
 
-### 坑 2 · `apt` 报 `Could not resolve`，但 `getent hosts` 正常
+### 坑 2 · `apt` 报 `Could not resolve`，但 `getent hosts`（root）正常
 
-**Android netd 按 UID 管控 DNS**：apt 默认把下载方法降权到 `_apt`（uid 100），该 UID 不在 `inet` 组，
-DNS 查询被 netd 拦掉。`getent`/`ping` 用的是 root，所以看起来“网络是好的”。
+当时归因成“netd 按 UID 拦 DNS”，**后来证伪**：真正原因是 UID 缺少 `aid_inet` 组，
+连 `socket(AF_INET)` 都会 `EACCES`（详见坑 11）。root 在组豁免范围内，所以看起来“网络是好的”。
+把 `svc` / `_apt` 加进 `aid_inet(3003)` 后，`svc` 自己就能解析域名，apt 的 `Sandbox::User "root"` 也就不再是必需品。
 
 ```sh
 # /etc/apt/apt.conf.d/99-r9sk
@@ -182,6 +186,50 @@ media_rw:x:1023:svc
 > 顺带一个反面教材：改 `/etc/passwd` 时把补充组写进了 gecos 字段（`svc:x:2000:2000,1015,1023::`），
 > 导致 `getpwnam` 解析失败、SSH 直接 `Permission denied (publickey)`。补充组只能写在 `/etc/group`。
 
+### 坑 11 · `svc` 完全没网（`socket(AF_INET): Permission denied`）—— 最隐蔽的一个
+
+现象很会骗人：
+
+| 观察到的 | 容易得出的错结论 |
+| --- | --- |
+| `curl https://…` → `Could not resolve host` | “DNS 坏了” |
+| `getent hosts`（root）正常返回 A/AAAA | “网络是好的，是解析配置错” |
+| `ip route get 8.8.8.8` 能出 `via 192.168.2.1 dev wlan0` | “路由没问题” |
+| iptables / nat 里找不到任何 `dport 53` 规则 | “不是防火墙” |
+| 但 `curl http://146.75.114.132/` 也失败，`after 0 ms` | ← **0 ms 是关键线索** |
+
+真正的报错藏在 busybox 的 errno 里：
+
+```
+wget: socket(AF_INET,1,0): Permission denied     # EACCES，发生在 socket()，不是 connect()
+```
+
+原因：这台机器的内核开了 **`CONFIG_ANDROID_PARANOID_NETWORK`** —— 只有 supplementary group
+含 **`aid_inet(3003)`** 的 UID 才允许创建 IPv4/IPv6 socket（`AID_NET_RAW=3004` 对应 raw socket）。
+`svc` 当时只有 1015/1023，于是**连 socket 都建不出来**；root 属于豁免，所以 root 一切正常。
+
+修复（写进 chroot 的 `/etc/group`，sshd 用 `initgroups()` 从那取组）：
+
+```sh
+# /data/debian/etc/group
+aid_inet:x:3003:svc,_apt
+aid_net_raw:x:3004:svc
+```
+
+验证（重启 sshd 后必须重新登录）：
+
+```sh
+ssh -p 2222 svc@192.168.2.205 'id'   # 要出现 3003(aid_inet)
+ssh -p 2222 svc@192.168.2.205 'getent hosts deb.debian.org; curl -sS -o /dev/null -w "%{http_code}\n" https://deb.debian.org/debian/README'
+```
+
+`scripts/10-server.sh` 里已加幂等的 `ensure_member`，每次开机自动补齐，避免重建 rootfs 后再踩。
+
+> 这个坑顺带解释了另一件事：`androidboot.selinux`、`ip rule` 里的
+> `22000: from all fwmark 0x0/0xffff lookup wlan0` 都正常，**未打 mark 的 socket 也能路由**——
+> 模板化的“Android 需要 netd 打 fwmark 才能联网”在这个版本上并不是根因。
+
+
 ---
 
 ## 5. 开机自启脚本
@@ -213,6 +261,59 @@ LOG=/data/local/tmp/server.log
 
 ---
 
+## 5.5 Wi-Fi 接入（无屏操作）
+
+解锁时 `/data` 被清空，`wpa_supplicant.conf` 是空的 → 手机只有蜂窝（CGNAT `10.x`），PC 连不进去。
+
+两个办法，**优先用手机屏幕**（不把密码写进会话记录）：
+
+| 方式 | 做法 | 注意 |
+| --- | --- | --- |
+| 手机点一下（推荐） | 设置 → WLAN → 选 AP → 输密码 | 最干净，密码不落任何日志 |
+| root 直接写配置 | `scripts/connect-wifi.sh "SSID" "PASSWORD"` | 脚本只接参数、不写死；密码会进 shell 历史/会话记录 |
+
+`connect-wifi.sh` 的关键点：
+
+```sh
+cp -f /data/misc/wifi/wpa_supplicant.conf /data/local/tmp/wpa_supplicant.conf.bak   # 先备份
+# 用 >> 追加 network 段：保持原文件属主/权限（wpa_supplicant 对此敏感）
+svc wifi disable; sleep 2; svc wifi enable                                           # 让 supplicant 重读配置
+# 轮询 wlan0 直到拿到 IPv4，最多 30 s
+```
+
+实测结果（2026-11-24）：`yuan_5G`（**5 GHz**，`5200 MHz`，`433 Mbps`，RSSI -29）连上后
+`wlan0 = 192.168.2.205/24`，PC 端 `ssh -p 2222 svc@192.168.2.205` 直连成功（不再需要 `adb forward`）。
+
+> 注意 `dumpsys wifi` 里两个不同的 SSID 状态：`Wi-Fi is enabled` 只表示**开关**开着，
+> 真正的连接状态看 `mNetworkInfo … state: CONNECTED` / `Supplicant state: COMPLETED`。
+> `mWifiInfo: [null]` + `SCANNING` 就是没连上。
+
+---
+
+## 5.6 跑一个真实服务（nginx 示例）
+
+```sh
+# 装（root，从 Android 侧进 chroot）
+adb shell 'su -c "LD_PRELOAD= /system/bin/chroot /data/debian /usr/bin/env -i \
+  PATH=/usr/sbin:/usr/bin:/sbin:/bin /usr/bin/apt-get install -y nginx-light"'
+
+# 非 root 不能绑 80 → 改成 8080；pid/日志目录给 svc
+sed -i 's/listen 80 default_server;/listen 8080 default_server;/' /etc/nginx/sites-available/default
+sed -i 's#^pid /run/nginx.pid;#pid /run/nginx/nginx.pid;#' /etc/nginx/nginx.conf
+mkdir -p /run/nginx && chown 2000:2000 /run/nginx /var/log/nginx
+
+# 以 svc 起（sshd 会话里）
+nginx && nginx -t && nginx -s reload
+```
+
+实测：`ps` 里 nginx master/worker 全是 `uid 2000`；PC `curl http://192.168.2.205:8080/` → **200，27 ms**；
+开机脚本 `20-nginx.sh` 会在重启后自动拉起（不需要就删掉该文件）。
+
+> `nginx -t` 报 `"user" directive makes sense only if the master process runs with super-user privileges`
+> 是**预期警告**（非 root 启动时 `user` 指令被忽略），不是错误。
+
+---
+
 ## 6. 运维命令速查
 
 ```sh
@@ -222,6 +323,9 @@ adb shell 'su -c "cat /data/local/tmp/server.log"'
 # 手动跑一遍自启脚本（幂等，可随时执行）
 adb shell 'su -c "sh /data/adb/service.d/10-server.sh"'
 
+# 从 PC 直连（Wi-Fi 就绪时）
+ssh -p 2222 svc@192.168.2.205
+
 # 进 chroot（PC 上）
 adb shell 'su -c "sh /data/local/tmp/chroot.sh"'
 
@@ -229,6 +333,14 @@ adb shell 'su -c "sh /data/local/tmp/chroot.sh"'
 adb shell 'su -c "kill $(cat /data/debian/run/sshd.pid)"'
 adb shell 'su -c "LD_PRELOAD= /system/bin/chroot /data/debian /usr/bin/env -i \
   PATH=/usr/sbin:/usr/bin:/sbin:/bin /usr/sbin/sshd -p 2222 -o PidFile=/run/sshd.pid"'
+
+# nginx（以 svc 身份，在 ssh 会话里）
+nginx -t && nginx -s reload        # 改完配置热加载
+kill $(cat /run/nginx/nginx.pid)   # 停
+
+# 需要 root 的操作（apt / 改系统文件）：从 Android 侧进 chroot，不要 sudo（nosuid）
+adb shell 'su -c "LD_PRELOAD= /system/bin/chroot /data/debian /usr/bin/env -i \
+  PATH=/usr/sbin:/usr/bin:/sbin:/bin HOME=/root /bin/bash -l"'
 
 # 没 WiFi 时临时从 PC 连（本地 2222 被占用就换个端口）
 adb forward tcp:22222 tcp:2222
@@ -253,14 +365,13 @@ ssh -p 22222 svc@127.0.0.1
 ## 8. 当前状态与下一步
 
 **已完成**：rootfs → chroot → apt（清华源）→ openssh → `svc` 用户 → 公钥登录 → service.d 开机自启 →
-无线 adb 兜底 → 重启验证（16.5 s 可用）→ `/sdcard` 读写。
+无线 adb 兜底 → `/sdcard` 读写 → **Wi-Fi 接入（5 GHz，192.168.2.205）** → **`aid_inet` 网络组修复** →
+**nginx 以 uid 2000 跑在 8080** → 重启验证（重启后 SSH **26.6 s** 可用、DNS/HTTP 正常、nginx 自动拉起）。
 
-**待办**：
+**待办 / 可选**：
 
-1. **WiFi 未连接** —— 解锁时 `/data` 被清空，`wpa_supplicant.conf` 里没有任何保存的网络，
-   手机现在只有蜂窝（CGNAT `10.x`，PC 连不进去）。需要手动连一次家里 AP，
-   或用 `adb forward` 临时替代（已验证可用）。
-2. 按需装服务：`nginx` / `caddy` / `gitea` / `mosquitto` / `syncthing` 都只是 `apt install` 一句话；
+1. 按需装服务：`caddy` / `gitea` / `mosquitto` / `syncthing` 都是 `apt install` 一句话；
    Home Assistant 能跑但吃紧（300–500 MB），Jellyfin 转码 / ES 不行。
-3. 远程接入：`/dev/tun` 可开 → Tailscale 官方 arm64 静态包可直接放进 chroot 跑。
-4. 内存上限（可选）：`/sys/fs/cgroup/memory/<group>/memory.limit_in_bytes` 实测可写，可给单服务兜底。
+2. 远程接入：`/dev/tun` 可开 → Tailscale 官方 arm64 静态包可直接放进 chroot 跑（不要在路由器上把 2222 映射出去）。
+3. 内存上限（可选）：`/sys/fs/cgroup/memory/<group>/memory.limit_in_bytes` 实测可写，可给单服务兜底。
+4. 想绑 80/443：要么 `iptables -t nat` 从 80 转发到 8080，要么把 `net.ipv4.ip_unprivileged_port_start` 调低，不要为此给 `svc` sudo。
