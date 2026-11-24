@@ -1,0 +1,5 @@
+# 脚本要直接在 Android 的 sh 下跑（CRLF 会让 shebang 失效），强制 LF
+*.sh        text eol=lf
+*.md        text eol=lf
+*.txt       text eol=lf
+*.py        text eol=lf
