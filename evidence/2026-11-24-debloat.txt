@@ -1,0 +1,281 @@
+# OPPO R9sk 去预装实测记录
+# 日期：2026-11-24 16:2x - 17:0x CST
+# 设备：adb -s 244fda8a / R9sk_11_A.37_191127 / Android 6.0.1 / ColorOS 3.0
+# 执行人：Sisyphus（PC 侧 adb + 设备侧 su）
+
+## 0. 前置清点
+
+$ adb shell pm list packages -s | wc -l          -> 180
+$ adb shell pm list packages -3                  -> com.topjohnwu.magisk（仅此一个）
+$ adb shell pm list packages -d | wc -l          -> 0（此前没有任何禁用）
+$ adb shell getprop gsm.sim.state                -> READY,ABSENT      # 无 SIM
+$ adb shell getprop gsm.operator.alpha            -> 中国电信,无服务
+$ adb shell mount | grep ' /system '             -> /dev/block/bootdevice/by-name/system ext4 ro
+$ adb shell pm install-existing --help           -> Error: unknown command 'install-existing'
+
+结论：Android 6 没有 install-existing；/system 只读；卸载只能 `pm uninstall --user 0`。
+
+## 1. 卸载前内存画像（dumpsys meminfo，总 3595 MB，used 2915 / free 679）
+
+   408188 kB: opencode (pid 1322)
+   120437 kB: system (pid 1753)
+    55853 kB: com.android.keyguard
+    39244 kB: com.oppo.launcher
+    36883 kB: com.nearme.instant.platform      <-- 快应用框架，最大单体垃圾
+    35460 kB: com.android.systemui
+    34031 kB: com.android.phone
+    33681 kB: com.android.mms
+    33512 kB: android.process.media
+    31214 kB: com.ted.number                   <-- 号码识别
+    29792 kB: mm-qcamera-daemon
+    24475 kB: com.coloros.mcs
+    19972 kB: com.coloros.safecenter
+    18261 kB: android.process.contacts
+    15994 kB: com.coloros.safecenter:clear_filter
+    15149 kB: mediaserver
+    15027 kB: com.sohu.inputmethod.sogouoem
+    12839 kB: com.quicinc.cne.CNEService
+    12404 kB: com.nearme.statistics.rom       <-- 统计上报
+    12226 kB: com.coloros.oppoguardelf
+    12064 kB: com.coloros.activation
+    11903 kB: zerotier-one
+
+## 2. 卸载执行（PC 侧逐包 adb shell su -c 'pm uninstall -k --user 0 <pkg>'）
+
+58 个包，58/58 返回 Success，0 失败。原始日志：work/debloat/uninstall-log.txt（不入库）
+
+[1/58]  com.nearme.gamecenter                     => Success
+[2/58]  com.nearme.instant.platform               => Success
+[3/58]  com.nearme.statistics.rom                 => Success
+[4/58]  com.oppo.market                           => Success
+[5/58]  com.nearme.atlas                          => Success
+[6/58]  com.oppo.usercenter                       => Success
+[7/58]  com.nearme.themespace                     => Success
+[8/58]  com.nearme.themespacelib                  => Success
+[9/58]  com.nearme.sync                           => Success
+[10/58] com.coloros.feedback                      => Success
+[11/58] com.nearme.romupdate                      => Success
+[12/58] com.oppo.ota                              => Success
+[13/58] com.oppo.tzupdate                         => Success
+[14/58] com.coloros.cloud                         => Success
+[15/58] com.coloros.backuprestore                 => Success
+[16/58] com.coloros.backuprestore.remoteservice   => Success
+[17/58] com.coloros.backup.composer.app           => Success
+[18/58] com.coloros.operationManual               => Success
+[19/58] com.coloros.pictorial                     => Success
+[20/58] com.coloros.oppomorningsystem             => Success
+[21/58] com.coloros.childrenspace                 => Success
+[22/58] com.coloros.video                         => Success
+[23/58] com.oppo.music                            => Success
+[24/58] com.android.browser                       => Success
+[25/58] com.coloros.wallpapers                    => Success
+[26/58] com.android.wallpaper.livepicker          => Success
+[27/58] com.coloros.speechassist                  => Success
+[28/58] com.coloros.speechassist.engine           => Success
+[29/58] com.android.calendar                      => Success
+[30/58] com.android.providers.calendar            => Success
+[31/58] com.android.printspooler                  => Success
+[32/58] com.android.dlna.service                  => Success
+[33/58] com.android.calllogbackup                 => Success
+[34/58] com.android.backupconfirm                 => Success
+[35/58] com.android.sharedstoragebackup           => Success
+[36/58] com.android.stk                           => Success
+[37/58] com.android.smspush                       => Success
+[38/58] com.redteamobile.roaming                  => Success
+[39/58] com.redteamobile.virtual.softsim          => Success
+[40/58] com.android.vendors.bridge.softsim        => Success
+[41/58] com.qualcomm.qti.telephony.vodafonepack   => Success
+[42/58] com.qualcomm.qti.GBAHttpAuthentication.auth => Success
+[43/58] com.qti.xdivert                           => Success
+[44/58] com.qualcomm.qti.modemtestmode            => Success
+[45/58] com.qualcomm.atfwd                        => Success
+[46/58] com.qti.dpmserviceapp                     => Success
+[47/58] com.qti.primarycardcontroller             => Success
+[48/58] com.qualcomm.embms                        => Success
+[49/58] com.criticallog                           => Success
+[50/58] com.oppo.logkitsdservice                  => Success
+[51/58] com.oppo.oppologkit                       => Success
+[52/58] com.mobiletools.systemhelper              => Success
+[53/58] com.daemon.shelper                        => Success
+[54/58] com.dropboxchmod                          => Success
+[55/58] com.ted.number                            => Success
+[56/58] com.svox.pico                             => Success
+[57/58] com.oppo.quicksearchbox                   => Success
+[58/58] com.oppo.c2u                              => Success
+
+卸载前 APK 已整包备份到 PC：
+  work/debloat/apks/<pkg>.apk，58 个
+  最大三个：nearme.instant.platform 54,889,491 B / android.browser 52,751,949 B / ted.number 46,166,421 B
+
+## 3. 卸载后 / 重启后验证
+
+$ pm list packages | wc -l        -> 123        （原 180 系统包 + 1 三方 = 181）
+$ pm list packages -u | wc -l     -> 181        （记录仍在，可恢复）
+58 个被删包在重启后查询：stillPresent = 0
+
+核心进程（重启后）：
+  system    2164  S  com.android.systemui
+  u0_a10    2092  S  com.android.keyguard
+  radio     2739  S  com.android.phone
+  u0_a52    2792  S  com.oppo.launcher
+  system    2694  S  com.coloros.safecenter
+  system    3182  S  com.coloros.mcs
+
+网络：
+  ip -4 addr show wlan0      -> inet 192.168.2.205/24
+  ip rule | grep 21000       -> 21000: from all to 192.168.193.0/24 lookup main
+  /proc/net/tcp  :10CC       -> 0.0.0.0:4300 LISTEN（uid 2000 / pid 1335）
+  /proc/net/tcp  :08AE       -> 0.0.0.0:2222 LISTEN（sshd）
+
+内存（重启后干净态，uptime 236 s）：
+  Mem: total 3595 / used 2239 / free 1355      （卸载前 used 2915 / free 679）
+  total PSS：
+     161601 kB: opencode (pid 1331)             （卸载前 408188 kB，随会话增长）
+     106131 kB: system
+      43918 kB: com.android.keyguard
+      39743 kB: com.android.systemui
+      34138 kB: com.oppo.launcher
+      31102 kB: com.android.mms                  （保留：短信本体）
+      30071 kB: android.process.media
+      29810 kB: mm-qcamera-daemon                （保留：相机 HAL）
+
+崩溃扫描：
+  logcat -d | grep -cE 'FATAL EXCEPTION|ANR in'  -> 0
+
+## 4. 重启计时（PC 侧 adb reboot 到端口可用）
+
+测量 1：adb device back 17.6 s / ssh:2222 32.6 s / web LAN 32.8 s / web ZT 33.3 s
+测量 2：adb device back 17.5 s / ssh:2222 32.0 s / web LAN 32.4 s / web ZT 32.7 s
+历史基线（卸载前，docs/14）：ssh 26.1 s / web 26.1 s / ip rule 26.1 s
+
+差值的来源不是服务变慢，而是 Wi-Fi 关联 + DHCP 的耗时：
+$ grep -E 'boot: start|sshd start|opencode: started|policy rule added' /data/local/tmp/server.log | tail -4
+[2026-11-24 16:49:46] === boot: start ===
+[2026-11-24 16:49:47] sshd start rc=0
+[2026-11-24 16:49:47] opencode: started pid=1321 (uid 2000, 0.0.0.0:4300)
+[2026-11-24 16:50:00] zerotier: policy rule added (cached): to 192.168.193.0/24 lookup main
+
+即 sshd / opencode 在 boot 标记后 1 s 内就绪，ZT 策略路由 13 s 就绪；
+「PC 能连上」的时间由 wlan0 拿到地址决定。
+
+## 5. 恢复路径实验（三组，全部实测）
+
+### 5.1 直接 pm install —— 被 ColorOS 拦，且表现为"卡死"
+
+$ su -c 'pm uninstall -k --user 0 com.coloros.operationManual'   -> Success
+$ su -c 'pm install -r -d /system/app/OppoOperationManual/OppoOperationManual.apk'
+        pkg: /system/app/OppoOperationManual/OppoOperationManual.apk
+        ... 300 s 无后续输出，超时
+$ dumpsys window | grep mFocusedApp
+        mFocusedApp=... com.android.packageinstaller/.OppoPackageInstallerActivity
+
+不是死锁：OppoPackageInstallerActivity（ColorOS 安装确认页）被拉起，锁屏后面等人点。
+解锁后 uiautomator 也读不到按钮（bottom_button_layout 无子节点），只能按坐标点：
+  input keyevent 224; input swipe 540 1600 540 200 200; input keyevent 82; input tap 810 1839
+点击后 InstallAppProgress -> package:/data/app/com.coloros.operationManual-1/base.apk（恢复成功）
+
+### 5.2 PackageInstaller 会话 API —— 能装，但不恢复 user 0 安装态
+
+$ pm install-create -r -g -S 203785          -> Success: created install session [955746753]
+$ pm install-write -S 203785 955746753 base /data/local/tmp/x.apk -> Success: streamed
+$ pm install-commit 955746753                -> Success
+$ pm list packages | grep com.coloros.feedback -> （空）
+$ pm list packages -u | grep com.coloros.feedback -> package:com.coloros.feedback   # 仍标记为未安装
+
+### 5.3 改 package-restrictions.xml —— 唯一可脚本化的完整恢复（采用）
+
+卸载状态记录形如（/data/system/users/0/package-restrictions.xml，136 行/8092 B）：
+  <pkg name="com.coloros.browser" inst="false" stopped="true" nl="true" />
+
+$ su -c 'sh /data/local/tmp/restore-one.sh com.coloros.feedback'
+  pkg=com.coloros.feedback before=1 after=0 lines=135
+  head=<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+  xml-head=ok / xml-tail=ok
+$ adb reboot && 等 30 s
+$ pm list packages | grep feedback   -> package:com.coloros.feedback
+$ pm path com.coloros.feedback       -> package:/data/app/com.coloros.feedback-1/base.apk   # 恢复成功
+
+实验完成后已重新卸载 com.coloros.feedback，最终 installed=123。
+
+## 6. 踩坑
+
+1. `pm uninstall --user 0` 是"按用户卸载"，不是删 APK；APK 仍在 /system，/data 因 -k 保留。
+2. `pm install` 在 ColorOS 上会被 OppoPackageInstallerActivity 接管；adb/PowerShell 侧表现为
+   "卡在 pkg: 行"，实际是在等一次 UI 点击 → 别误判成 PackageManager 死锁。
+3. 抢救时 `adb shell "su -c '...'"` 在 PowerShell 里引号会被吃掉（sed/grep 参数被拆断），
+   凡是带引号的设备侧命令，一律写成脚本 push 过去执行。
+4. uiautomator dump 抓不到 ColorOS 安装页的按钮节点（bottom_button_layout 为空），
+   只能按坐标点；屏幕 1080x1920、density 480，安装按钮在 (810, 1839) 附近。
+5. 卸载后首次重启，PC→ZT 曾出现 ~4 分钟不可达（ZT peers 走 relay，ARP 未建立）；
+   从设备侧 `ping 192.168.193.4` 之后立刻恢复直连，随后两次重启均在 33 s 内可达 —— 属 ZT 路径协商，
+   与去预装无关。
+
+## 7. 完整回滚演练（58 → 181 → 58，端到端）
+
+目的：不只依赖单包实验（§5.3），用全部 58 个包验证 `restore-coloros.sh` / `debloat-coloros.sh` 两条脚本
+端到端可用。
+
+| 时刻 | 动作 | 证据 |
+| --- | --- | --- |
+| 16:51 | 演练前快照：`package-restrictions.xml` 65 个 `<pkg>` 标签，其中 `inst="false"` **58** 条 | `work/debloat/package-restrictions.xml` |
+| 16:58 | `sh restore-coloros.sh --apply` → 改前备份 `/data/local/tmp/package-restrictions.xml.bak`（8080 B，**58** 条 `inst="false"`），改后头尾校验通过 | 设备文件；本地副本 `work/debloat/drill-bak.xml`（`pkg_tags=65 inst_false=58`） |
+| ~16:59 | `adb reboot` | `sys.boot_completed=1` |
+| 16:59:59–17:01:59 | 回滚生效后跑 `debloat-coloros.sh --apply`：`summary: total=58 removed=58 skipped=0 failed=0` → 58 个包**全部回到 user 0**（否则会被 skip） | `/data/local/tmp/debloat.log` |
+| 17:05 | 逐包 `pm path` 复查：GONE=**55**，仍可解析 3 个（`com.dropboxchmod` / `com.ted.number` / `com.svox.pico`）；同一时刻 `inst="false"` 恰为 55 条 | `work/debloat/restrictions-now.xml` |
+| 17:12 | 重跑 `debloat-coloros.sh --apply`（幂等）：`total=58 removed=3 skipped=55 failed=0` | `debloat.log` |
+| 17:13 | `adb reboot` 后再查：58/58 GONE、`pm list packages`=123、`-u`=181 | `work/debloat/check-postboot.txt` |
+
+结论：恢复链路与卸载链路都端到端可用 —— 回滚到 **181** 个包（`pm path` 指回 `/system/app/...`），
+再卸载回到 **123**。
+
+**附带发现（写进脚本注意事项）**：上面 3 个包第一次 `--apply` 也返回 `Success`，但 4 分钟后 `pm path`
+仍能解析；重跑一次（随后重启）才彻底消失。脚本本身幂等，发现残留直接重跑 `--apply` 即可。
+
+## 8. 最终状态（17:13 重启后，uptime ~6 min）
+
+```
+$ pm list packages | wc -l                      -> 123
+$ pm list packages -u | wc -l                   -> 181
+$ check.sh（58 包逐个 pm path）                  -> GONE=58  OK=0
+$ logcat -d | grep -cE 'FATAL EXCEPTION|ANR in' -> 0
+```
+
+重启计时（`adb reboot` 起算，PC 侧 TCP 探测）：
+
+```
+adb device back     16.0 s
+boot_completed      +7.8 s   （累计 ~24 s）
+ssh:2222  (LAN)     +1 s
+web:4300  (LAN)     +0 s
+web:4300  (ZT)      +4 s     （累计 29.6 s）
+```
+
+服务与端口：
+
+```
+tcp 0.0.0.0:4300  LISTEN   opencode（uid 2000）
+tcp 0.0.0.0:2222  LISTEN   sshd
+tcp 0.0.0.0:8080  LISTEN   nginx（含 :::8080）
+ip rule 21000: from all to 192.168.193.0/24 lookup main
+```
+
+HTTP（PC 192.168.2.161）：
+
+```
+http://192.168.2.205:4300/                 -> 200  18 ms  9571 B
+http://192.168.193.5:4300/                 -> 200  90 ms  9571 B
+http://192.168.193.5:4300/api/config       -> 401（无凭据，Basic 门生效）
+```
+
+内存（`dumpsys meminfo` 头部，uptime 5:51）：
+
+```
+Total RAM: 3681580 kB / Free RAM: 1961259 kB / Used RAM: 1394487 kB / Lost: 304334 kB
+=> used 1362 MB / free 1915 MB        （卸载前基线：used 2915 / free 679）
+```
+
+核心进程（重启后）：`systemui` 2197、`keyguard` 2111、`phone` 2808、`launcher` 2857、
+`safecenter` 2599、`mcs` 3120 全在；`mm-qcamera-daemon` 888（相机 HAL 保留）。
+
+> 内存按 `dumpsys meminfo` 头部口径统计，但采样时刻不同（uptime 3–7 min、opencode 会话长度不同），
+> 因此 `used/free` 在多次采样间有 ±500 MB 波动；趋势一致：free 从 679 MB 抬到 1.3–1.9 GB。

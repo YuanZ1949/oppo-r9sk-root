@@ -1,0 +1,77 @@
+# ColorOS 3.0 去预装清单（OPPO R9sk / Android 6.0.1 / R9sk_11_A.37_191127）
+#
+# 划分原则（2026-11-24 由机主确定）：
+#   ★ 保留「手机这台机器特有的核心能力」+「传感器相关能力」
+#     通话/短信/相机/指纹/传感器/GPS/录音/手电筒/投屏/音效/输入法/文件管理/图库
+#   ★ 只删「手机外壳上的应用与服务」：商店、推广、统计、OTA、云、主题、杂志、娱乐、日志、虚拟卡
+#
+# 每行一个包名，# 开头为注释。scripts/debloat-coloros.sh 与 scripts/restore-coloros.sh 共用本文件。
+#
+# ---- 商店 / 推广 / 统计 ----
+com.nearme.gamecenter
+com.nearme.instant.platform
+com.nearme.statistics.rom
+com.oppo.market
+com.nearme.atlas
+com.oppo.usercenter
+com.nearme.themespace
+com.nearme.themespacelib
+com.nearme.sync
+com.coloros.feedback
+# ---- 系统更新 / 云 / 备份 ----
+com.nearme.romupdate
+com.oppo.ota
+com.oppo.tzupdate
+com.coloros.cloud
+com.coloros.backuprestore
+com.coloros.backuprestore.remoteservice
+com.coloros.backup.composer.app
+com.coloros.operationManual
+# ---- 内容 / 娱乐 / 壁纸 ----
+com.coloros.pictorial
+com.coloros.oppomorningsystem
+com.coloros.childrenspace
+com.coloros.video
+com.oppo.music
+com.android.browser
+com.coloros.wallpapers
+com.android.wallpaper.livepicker
+# ---- 语音助手 / TTS ----
+com.coloros.speechassist
+com.coloros.speechassist.engine
+# ---- 非核心应用 ----
+com.android.calendar
+com.android.providers.calendar
+com.android.printspooler
+com.android.dlna.service
+com.oppo.quicksearchbox
+com.oppo.c2u
+# ---- 备份确认链（桌面备份入口）----
+com.android.calllogbackup
+com.android.backupconfirm
+com.android.sharedstoragebackup
+# ---- 运营商增值 / 虚拟 SIM / 漫游（本机无 SIM，READY,ABSENT）----
+com.android.stk
+com.android.smspush
+com.redteamobile.roaming
+com.redteamobile.virtual.softsim
+com.android.vendors.bridge.softsim
+com.qualcomm.qti.telephony.vodafonepack
+com.qualcomm.qti.GBAHttpAuthentication.auth
+com.qti.xdivert
+# ---- 高通 MODEM/投屏测试与调试（保留 wfd.service 投屏本体）----
+com.qualcomm.qti.modemtestmode
+com.qualcomm.atfwd
+com.qti.dpmserviceapp
+com.qti.primarycardcontroller
+com.qualcomm.embms
+# ---- 厂商日志 / 助手守护 ----
+com.criticallog
+com.oppo.logkitsdservice
+com.oppo.oppologkit
+com.mobiletools.systemhelper
+com.daemon.shelper
+com.dropboxchmod
+# ---- 号码识别 / TTS 引擎 ----
+com.ted.number
+com.svox.pico

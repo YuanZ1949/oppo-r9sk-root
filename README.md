@@ -106,14 +106,19 @@ oppo-r9sk-root/
 │   ├── 12-magisk-success.md      ← Magisk 23.0 装法与启动验证
 │   ├── 13-magisk-app-and-coloros-install-gate.md ← App 安装 + 击穿 ColorOS 验证拦截
 │   ├── 14-chroot-server.md       ← 把手机当服务器：Debian 12 chroot + sshd:2222 + WiFi + 开机自启
-│   └── 15-zerotier-opencode.md   ← ZeroTier 远程接入 + OpenCode 2.2.5（arm64）装进 chroot
+│   ├── 15-zerotier-opencode.md   ← ZeroTier 远程接入 + OpenCode 2.2.5（arm64）装进 chroot
+│   └── 16-debloat.md             ← 去预装 58 个：边界划分、可回滚卸载、ColorOS 安装门与恢复
 ├── scripts/                      ← 部署到设备上的脚本（可直接复用）
 │   ├── 10-server.sh              ← /data/adb/service.d 开机自启（挂载 + 网络组 + sshd + 无线 adb 兜底）
 │   ├── 20-nginx.sh               ← 可选：开机以 yuan 身份拉起 nginx:8080
 │   ├── 30-zerotier.sh            ← 可选：开机拉起 ZeroTier（含 /dev/net/tun 软链 + 策略路由）
 │   ├── 40-opencode-web.sh        ← 可选：开机以 yuan 身份拉起 opencode serve:4300（0.0.0.0）
 │   ├── connect-wifi.sh           ← 无屏给 Android 6 写 WiFi（接参数，不写死凭据）
-│   └── chroot.sh                 ← 手动进 Debian chroot 的入口
+│   ├── chroot.sh                 ← 手动进 Debian chroot 的入口
+│   ├── debloat-list.txt          ← 去预装清单（58 个包，按类别分组，删/恢复共用）
+│   ├── debloat-coloros.sh        ← 手动：按清单 pm uninstall -k --user 0（先 dry-run 再 --apply）
+│   ├── debloat-check.sh          ← 手动：逐包 pm path 核对是否真卸载（期望全 GONE）
+│   └── restore-coloros.sh        ← 手动：删 package-restrictions 记录 + 重启，完整回滚
 ├── evidence/                     ← 实机采集的原始输出（只读）
 │   ├── 2026-11-21-device-props.txt
 │   ├── 2026-11-21-engineermode-surface.txt
@@ -130,7 +135,8 @@ oppo-r9sk-root/
 │   ├── 2026-11-24-chroot-wifi-inet.txt
 │   ├── 2026-11-24-user-rename.txt
 │   ├── 2026-11-24-zerotier-opencode.txt
-│   └── 2026-11-24-opencode-web-zt.txt
+│   ├── 2026-11-24-opencode-web-zt.txt
+│   └── 2026-11-24-debloat.txt
 ├── tools/
 │   └── axml_dump.py              ← 二进制 AndroidManifest/XML 解码器
 └── work/                         ← 中间产物（不入库，见 .gitignore）
@@ -172,7 +178,15 @@ oppo-r9sk-root/
   口令与 PC 同一份 `service.json`（Basic，用户名 `opencode`，文件不入库），
   局域网 `http://192.168.2.205:4300` 与 ZeroTier `http://192.168.193.5:4300` 均实测 200；
   `opencode run` 实测 23 s 返回。见 `docs/15`。
-- 去预装 / 改 hosts / 模块：Magisk 模块系统实测可用（`magisk --install-module`）。
+- 去预装（已完成，2026-11-24）：**181 → 123 个包**，`pm uninstall -k --user 0` 逐个执行（58/58 Success），
+  边界是「保留手机核心能力 + 传感器相关」，删掉商店/推广/统计/OTA/云/主题/杂志/娱乐/日志/虚拟 SIM。
+  内存 `free` 679 → **1355–1915 MB**（多次采样，`dumpsys meminfo` 口径），`dumpsys meminfo` 里最大的两个垃圾（`nearme.instant.platform` 36.9 MB、`ted.number` 31.2 MB）已消失，
+  重启后 `FATAL/ANR = 0`，systemui/keyguard/phone/launcher/safecenter 全在。
+  ⚠️ 卸载状态存在 `package-restrictions.xml`（`inst="false"`），Android 6 没有 `install-existing`，
+  且直接 `pm install` 会被 ColorOS 安装门拦成「卡死在 pkg: 行」——回滚必须走 `scripts/restore-coloros.sh` + 重启
+  （已用 58 包**全量往返演练**验证：58 恢复 → 181 包 → 再卸载 → 123 包）。
+  详见 `docs/16-debloat.md`、`evidence/2026-11-24-debloat.txt`。
+- 改 hosts / 模块：Magisk 模块系统实测可用（`magisk --install-module`）。
 - 银行类 App 隐藏 root：MagiskHide 已启用，按需在 App 里勾选目标。
 - ⚠️ **不要**在 Magisk App 里点「安装」升级到 24+：会失去 MagiskHide 且需要重新打补丁；23.0 是最后一代自带 Hide 的版本。
 
